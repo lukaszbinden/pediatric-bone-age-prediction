@@ -3,6 +3,12 @@ Based on kaggle RSNA Bone Age Prediction from X-Rays
 
 https://www.kaggle.com/kmader/rsna-bone-age
 
+# Cluster
+Pdf: How_to_use_Cluster
+account: studi5
+password: she9ohYe
+node03
+
 # First Task Deadline
 20th of April !!!
 Lukas: Installation of dataset on cluster and installation of baseline program of kevin mader
