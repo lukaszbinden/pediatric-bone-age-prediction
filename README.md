@@ -4,17 +4,17 @@ Based on kaggle RSNA Bone Age Prediction from X-Rays
 https://www.kaggle.com/kmader/rsna-bone-age
 
 # Cluster
-Pdf: How_to_use_Cluster
-account: studi5
-password: she9ohYe
-node03
+* Pdf: How_to_use_Cluster
+* account: studi5
+* password: she9ohYe
+* node03
 
 # First Task Deadline
 20th of April !!!
-Lukas: Installation of dataset on cluster and installation of baseline program of kevin mader
-Léonard: Preprocessing of images
-Joel: Investigate transfer learning datasets 
-Ya:  Implement and test other network approaches for the problem (resnet, vgg, etc.)
+* Lukas: Installation of dataset on cluster and installation of baseline program of kevin mader
+* Léonard: Preprocessing of images
+* Joel: Investigate transfer learning datasets 
+* Ya:  Implement and test other network approaches for the problem (resnet, vgg, etc.)
 
 # Project Deadline
 15th of May !!!
@@ -36,5 +36,7 @@ Ya:  Implement and test other network approaches for the problem (resnet, vgg, e
 * Try combining different architectures/approaches with meta learning (e.g. voting)
 
 # Links
-MURA dataset: https://stanfordmlgroup.github.io/projects/mura/
-Chest Xrays dataset: https://www.kaggle.com/nih-chest-xrays/data
+* MURA dataset: https://stanfordmlgroup.github.io/projects/mura/
+* Chest Xrays dataset on box (full set): https://nihcc.app.box.com/v/ChestXray-NIHCC
+* Chest Xrays dataset on kaggle (5% sample): https://www.kaggle.com/nih-chest-xrays/data
+* RSNA Bone Age on kaggle: https://www.kaggle.com/kmader/rsna-bone-age
