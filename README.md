@@ -40,3 +40,4 @@ https://www.kaggle.com/kmader/rsna-bone-age
 * Chest Xrays dataset on box (full set): https://nihcc.app.box.com/v/ChestXray-NIHCC
 * Chest Xrays dataset on kaggle (5% sample): https://www.kaggle.com/nih-chest-xrays/data
 * RSNA Bone Age on kaggle: https://www.kaggle.com/kmader/rsna-bone-age
+   Installed on studi5@node03 in dir /var/tmp/studi5/boneage/
