@@ -39,5 +39,5 @@ https://www.kaggle.com/kmader/rsna-bone-age
 * MURA dataset: https://stanfordmlgroup.github.io/projects/mura/
 * Chest Xrays dataset on box (full set): https://nihcc.app.box.com/v/ChestXray-NIHCC
 * Chest Xrays dataset on kaggle (5% sample): https://www.kaggle.com/nih-chest-xrays/data
-* RSNA Bone Age on kaggle: https://www.kaggle.com/kmader/rsna-bone-age
-   Installed on studi5@node03 in dir /var/tmp/studi5/boneage/
+* RSNA Bone Age on kaggle: https://www.kaggle.com/kmader/rsna-bone-age  
+   Installed 180426 on studi5@node03 in /var/tmp/studi5/boneage/
