@@ -6,7 +6,7 @@ from skimage.io import imread
 import os
 from glob import glob
 
-base_bone_dir='/home/luya/food-recognition-madima2016/boneage/'
+base_bone_dir='/var/tmp/studi5/boneage/'
 age_df= pd.read_csv(os.path.join(base_bone_dir,'boneage-training-dataset.csv'))
 age_df['path']=age_df['id'].map(lambda x: os.path.join(base_bone_dir, 'boneage-training-dataset',
                                                        '{}.png'.format(x)))
