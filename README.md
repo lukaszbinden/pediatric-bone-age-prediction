@@ -7,7 +7,10 @@ https://www.kaggle.com/kmader/rsna-bone-age
 * Pdf: How_to_use_Cluster
 * account: studi5
 * password: she9ohYe
-* node03
+* main working directory on node03:
+* ssh node03
+* [studi5@node03 boneage]$ pwd
+* /var/tmp/studi5/boneage
 
 # First Task Deadline
 20th of April !!!
