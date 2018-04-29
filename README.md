@@ -12,6 +12,14 @@ https://www.kaggle.com/kmader/rsna-bone-age
 * [studi5@node03 boneage]$ pwd
 * /var/tmp/studi5/boneage
 
+Run File: 
+* [studi5@master ~]$ ssh node03
+* [studi5@master ~]$ cd /var/tmp/boneage/jmcs-atml-boneage-prediction/src/baseline
+* [studi5@node03 ~]$ module load anaconda/3
+* [studi5@node03 ~]$ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda-9.0/lib64:/usr/local/cuda-9.0/extras/CUPTI/lib64
+* [studi5@node03 ~]$ python file.py
+
+
 # First Task Deadline
 20th of April !!!
 * Lukas: Installation of dataset on cluster and installation of baseline program of kevin mader
