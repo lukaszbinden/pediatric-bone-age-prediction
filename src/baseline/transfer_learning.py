@@ -18,20 +18,20 @@ from keras.models import Sequential
 
 base_datasets_dir = '/var/tmp/studi5/boneage/datasets/'
 
+''' READ NIH CHEST XRAYS SET '''
 base_chest_dir = base_datasets_dir + 'nih-chest-xrays/'
 chest_df = pd.read_csv(os.path.join(base_chest_dir, 'sample_labels.csv'))
-print(chest_df.as_matrix(['Image Index'])[0:3])
-print(chest_df.as_matrix(['Patient Age'])[0:3])
+chest_df['Patient Age'] = [int(x[:-1]) * 12 for x in chest_df['Patient Age']] # parse Year Patient Age to Month age
+
+#print(chest_df.as_matrix(['Image Index'])[0:3])
+#print(chest_df.as_matrix(['Patient Age'])[0:3])
 print(chest_df.as_matrix(['Image Index', 'Patient Age'])[0:3])
 
 raw_train_df, valid_df = train_test_split(chest_df, test_size=0.2, random_state=2018)  # , stratify=chest_df['Patient Age'])
 print('train', raw_train_df.shape[0], 'validation', valid_df.shape[0])
 
 
-
-
-
-
+''' READ RSNA BONEAGE SET '''
 base_boneage_dir = base_datasets_dir + 'boneage/'
 boneage_df = pd.read_csv(os.path.join(base_boneage_dir, 'boneage-training-dataset.csv')) # read csv
 boneage_df['path'] = boneage_df['id'].map(lambda x: os.path.join(base_boneage_dir, 'boneage-training-dataset',
