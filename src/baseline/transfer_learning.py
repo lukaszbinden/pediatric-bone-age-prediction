@@ -22,7 +22,7 @@ conv_base_model = InceptionResNetV2(include_top=True,
                                     pooling=None,
                                     classes=1000)
 
-base_chest_dir = '/var/tmp/studi5/boneage/nih-chest-xrays/'
+base_chest_dir = '/var/tmp/studi5/boneage/datasets/nih-chest-xrays/'
 chest_df = pd.read_csv(os.path.join(base_chest_dir, 'sample_labels.csv'))
 print(chest_df.as_matrix(['Image Index'])[0:3])
 print(chest_df.as_matrix(['Patient Age'])[0:3])
