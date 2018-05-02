@@ -23,10 +23,9 @@ from keras.models import Sequential
 base_datasets_dir = '/var/tmp/studi5/boneage/datasets/'
 IMG_SIZE = (384, 384)  # slightly smaller than vgg16 normally expects
 
-
-''' ==================================================
-Preprocess Image Data
-================================================== '''
+print('==================================================')
+print('============ Preprocessing Image Data ============')
+print('==================================================')
 core_idg = ImageDataGenerator(samplewise_center=False,
                               samplewise_std_normalization=False,
                               horizontal_flip=True,
@@ -39,9 +38,11 @@ core_idg = ImageDataGenerator(samplewise_center=False,
                               zoom_range=0.25,
                               preprocessing_function=preprocess_input)
 
-''' ==================================================
-Create Data Generators
-================================================== '''
+print('==================================================')
+print('============ Creating Data Generators ============')
+print('==================================================')
+
+
 def flow_from_dataframe(img_data_gen, in_df, path_col, y_col, **dflow_args):
     base_dir = os.path.dirname(in_df[path_col].values[0])
     print('## Ignore next message from keras, values are replaced anyways')
@@ -57,9 +58,10 @@ def flow_from_dataframe(img_data_gen, in_df, path_col, y_col, **dflow_args):
     print('Reinserting dataframe: {} images'.format(in_df.shape[0]))
     return df_gen
 
-''' ==================================================
-Read RSNA Chest XRays Dataset
-================================================== '''
+
+print('==================================================')
+print('======== Reading NIH Chest XRays Dataset =========')
+print('==================================================')
 base_chest_dir = base_datasets_dir + 'nih-chest-xrays/'
 class_str = 'Patient Age'
 
@@ -72,18 +74,18 @@ print(chest_df['exists'].sum(), 'images found of', chest_df.shape[0], 'total')
 # chest_df['chest_category'] = pd.cut(chest_df[class_str], 10)
 
 train_df_chest, valid_df_chest = train_test_split(chest_df, test_size=0.2,
-                                          random_state=2018)  # , stratify=chest_df['chest_category'])
+                                                  random_state=2018)  # , stratify=chest_df['chest_category'])
 print('train', train_df_chest.shape[0], 'validation', valid_df_chest.shape[0])
 
 train_gen_chest = flow_from_dataframe(core_idg, train_df_chest, path_col='path', y_col=class_str, target_size=IMG_SIZE,
-                                color_mode='rgb', batch_size=32)
+                                      color_mode='rgb', batch_size=32)
 
 valid_gen_chest = flow_from_dataframe(core_idg, valid_df_chest, path_col='path', y_col=class_str, target_size=IMG_SIZE,
-                                color_mode='rgb', batch_size=256)  # we can use much larger batches for evaluation
+                                      color_mode='rgb', batch_size=256)  # we can use much larger batches for evaluation
 
-''' ==================================================
-Read RSNA Boneage Dataset
-================================================== '''
+print('==================================================')
+print('========== Reading RSNA Boneage Dataset ==========')
+print('==================================================')
 base_boneage_dir = base_datasets_dir + 'boneage/'
 class_str = 'boneage'
 
@@ -96,18 +98,21 @@ print(boneage_df['exists'].sum(), 'images found of', boneage_df.shape[0], 'total
 # boneage_df['boneage_category'] = pd.cut(boneage_df[class_str], 10)
 
 train_df_boneage, valid_df_boneage = train_test_split(boneage_df, test_size=0.2,
-                                          random_state=2018)  # ,stratify=boneage_df['boneage_category'])
+                                                      random_state=2018)  # ,stratify=boneage_df['boneage_category'])
 print('train', train_df_boneage.shape[0], 'validation', valid_df_boneage.shape[0])
 
-train_gen_boneage = flow_from_dataframe(core_idg, train_df_boneage, path_col='path', y_col=class_str, target_size=IMG_SIZE,
-                                color_mode='rgb', batch_size=32)
+train_gen_boneage = flow_from_dataframe(core_idg, train_df_boneage, path_col='path', y_col=class_str,
+                                        target_size=IMG_SIZE,
+                                        color_mode='rgb', batch_size=32)
 
-valid_gen_boneage = flow_from_dataframe(core_idg, valid_df_boneage, path_col='path', y_col=class_str, target_size=IMG_SIZE,
-                                color_mode='rgb', batch_size=256)  # we can use much larger batches for evaluation
+valid_gen_boneage = flow_from_dataframe(core_idg, valid_df_boneage, path_col='path', y_col=class_str,
+                                        target_size=IMG_SIZE,
+                                        color_mode='rgb',
+                                        batch_size=256)  # we can use much larger batches for evaluation
 
-''' ==================================================
-Build Model
-================================================== '''
+print('==================================================')
+print('================= Building Model =================')
+print('==================================================')
 model = Sequential()
 conv_base_model = InceptionResNetV2(include_top=True,
                                     weights='imagenet',
@@ -119,3 +124,11 @@ conv_base_model.trainable = False
 
 model.add(conv_base_model)
 model.add(Dense(1, kernel_initializer='normal'))
+
+print('==================================================')
+print('================= Training Model =================')
+print('==================================================')
+
+print('==================================================')
+print('================ Evaluating Model ================')
+print('==================================================')
