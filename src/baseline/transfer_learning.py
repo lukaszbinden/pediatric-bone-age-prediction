@@ -28,14 +28,14 @@ base_chest_dir = base_datasets_dir + 'nih-chest-xrays/'
 
 chest_df = pd.read_csv(os.path.join(base_chest_dir, 'sample_labels.csv'))
 chest_df['Patient Age'] = [int(x[:-1]) * 12 for x in chest_df['Patient Age']]  # parse Year Patient Age to Month age
-chest_df['path'] = chest_df['Image Index'].map(lambda x: os.path.join(base_chest_dir, 'images', x))  # create path from id
+chest_df['path'] = chest_df['Image Index'].map(
+    lambda x: os.path.join(base_chest_dir, 'images', x))  # create path from id
 chest_df['exists'] = chest_df['path'].map(os.path.exists)
 print(chest_df['exists'].sum(), 'images found of', chest_df.shape[0], 'total')
-print(chest_df.as_matrix(['path'])[0:3])
-chest_df['chest_category'] = pd.cut(chest_df['Patient Age'], 10)
+# chest_df['chest_category'] = pd.cut(chest_df['Patient Age'], 10)
 
 raw_train_df, valid_df = train_test_split(chest_df, test_size=0.2,
-                                          random_state=2018, stratify=chest_df['chest_category'])
+                                          random_state=2018)  # , stratify=chest_df['chest_category'])
 print('train', raw_train_df.shape[0], 'validation', valid_df.shape[0])
 
 ''' ==================================================
@@ -48,10 +48,10 @@ boneage_df['path'] = boneage_df['id'].map(lambda x: os.path.join(base_boneage_di
                                                                  '{}.png'.format(x)))  # create path from id
 boneage_df['exists'] = boneage_df['path'].map(os.path.exists)
 print(boneage_df['exists'].sum(), 'images found of', boneage_df.shape[0], 'total')
-boneage_df['boneage_category'] = pd.cut(boneage_df['boneage'], 10)
+# boneage_df['boneage_category'] = pd.cut(boneage_df['boneage'], 10)
 
-raw_train_df, valid_df = train_test_split(boneage_df, test_size=0.2, random_state=2018,
-                                          stratify=boneage_df['boneage_category'])
+raw_train_df, valid_df = train_test_split(boneage_df, test_size=0.2,
+                                          random_state=2018)  # ,stratify=boneage_df['boneage_category'])
 print('train', raw_train_df.shape[0], 'validation', valid_df.shape[0])
 
 ''' ==================================================
@@ -69,10 +69,6 @@ core_idg = ImageDataGenerator(samplewise_center=False,
                               fill_mode='nearest',
                               zoom_range=0.25,
                               preprocessing_function=preprocess_input)
-
-
-
-
 
 ''' ==================================================
 Build Model
