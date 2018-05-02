@@ -14,13 +14,17 @@ Be happy and hopefully win the competition ;)
 import numpy as np
 import pandas as pd
 import os
+
+from keras import Input
 from keras.applications.inception_resnet_v2 import InceptionResNetV2, preprocess_input
 from keras.layers import Dense
 from keras.preprocessing.image import ImageDataGenerator
 from sklearn.model_selection import train_test_split
-from keras.models import Sequential
+from keras.models import Model
+from keras.callbacks import ModelCheckpoint, EarlyStopping, ReduceLROnPlateau
 
-base_datasets_dir = '/var/tmp/studi5/boneage/datasets/'
+base_dir = '/var/tmp/studi5/boneage/'
+base_datasets_dir = base_dir + '/datasets/'
 IMG_SIZE = (384, 384)  # slightly smaller than vgg16 normally expects
 
 print('==================================================')
@@ -113,20 +117,48 @@ valid_gen_boneage = flow_from_dataframe(core_idg, valid_df_boneage, path_col='pa
 print('==================================================')
 print('================= Building Model =================')
 print('==================================================')
-model = Sequential()
+
+t_x, t_y = next(train_gen_chest)  # I think always gets the next batch from the data generator
+in_layer = Input(t_x.shape[1:])
+
 conv_base_model = InceptionResNetV2(include_top=True,
                                     weights='imagenet',
                                     input_tensor=None,
-                                    input_shape=None,
+                                    input_shape=t_x.shape[1:],
                                     pooling=None,
                                     classes=1000)
 conv_base_model.trainable = False
 
-model.add(conv_base_model)
-model.add(Dense(1, kernel_initializer='normal'))
+features = conv_base_model(in_layer)
+
+out_layer = Dense(1, kernel_initializer='normal')(features)
+
+model = Model(inputs=[in_layer], outputs=[out_layer])
+
+model.compile(optimizer='adam', loss='mse')
+
+model.summary()  # prints the network structure
 
 print('==================================================')
-print('================= Training Model =================')
+print('========= Training Model on Chest Dataset ========')
+print('==================================================')
+
+weight_path = base_dir + "{}_weights.best.hdf5".format('bone_age')
+
+checkpoint = ModelCheckpoint(weight_path, monitor='val_loss', verbose=1, save_best_only=True, mode='min',
+                             save_weights_only=True) # save the weights
+
+early = EarlyStopping(monitor="val_loss", mode="min",
+                      patience=5)  # probably needs to be more patient, but kaggle time is limited
+
+reduceLROnPlat = ReduceLROnPlateau(monitor='val_loss', factor=0.8, patience=10, verbose=1, mode='auto', epsilon=0.0001,
+                                   cooldown=5, min_lr=0.0001)
+
+model.fit_generator(train_gen_chest, validation_data=valid_gen_chest, epochs=15,
+                    callbacks=[checkpoint, early, reduceLROnPlat]) # trains the model
+
+print('==================================================')
+print('======= Training Model on Boneage Dataset ========')
 print('==================================================')
 
 print('==================================================')
