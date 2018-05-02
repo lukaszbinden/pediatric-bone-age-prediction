@@ -7,17 +7,14 @@ https://www.kaggle.com/kmader/rsna-bone-age
 * Pdf: How_to_use_Cluster
 * account: studi5
 * password: she9ohYe
-* main working directory on node03:
-* ssh node03
-* [studi5@node03 boneage]$ pwd
-* /var/tmp/studi5/boneage
 
 Run File: 
-* [studi5@master ~]$ ssh node03
-* [studi5@master ~]$ cd /var/tmp/studi5/boneage/git/jmcs-atml-bone-age-prediction/src/baseline
-* [studi5@node03 ~]$ module load anaconda/3
-* [studi5@node03 ~]$ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda-9.0/lib64:/usr/local/cuda-9.0/extras/CUPTI/lib64
-* [studi5@node03 ~]$ python file.py
+* ssh studi5@cluster.inf.unibe.ch
+* password: she9ohYe
+* ssh node03
+* cd /var/tmp/studi5/boneage/git/jmcs-atml-bone-age-prediction/src/baseline
+* module load anaconda/3 && export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda-9.0/lib64:/usr/local/cuda-9.0/extras/CUPTI/lib64
+* python file.py
 
 # First Task Deadline
 Until 01 of May !!!
