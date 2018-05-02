@@ -20,12 +20,12 @@ from keras.callbacks import ModelCheckpoint, LearningRateScheduler, EarlyStoppin
 from keras.metrics import mean_absolute_error
 
 base_bone_dir = '/var/tmp/studi5/boneage/datasets'
-age_df = pd.read_csv(os.path.join(base_bone_dir, 'boneage-training-dataset.csv'))
+age_df = pd.read_csv(os.path.join(base_bone_dir, 'boneage-training-dataset.csv'))  # read csv
 age_df['path'] = age_df['id'].map(lambda x: os.path.join(base_bone_dir, 'boneage-training-dataset',
-                                                         '{}.png'.format(x)))
-age_df['exists'] = age_df['path'].map(os.path.exists)
-print(age_df['exists'].sum(), 'images found of', age_df.shape[0], 'total')
-age_df['gender'] = age_df['male'].map(lambda x: 'male' if x else 'female')
+                                                         '{}.png'.format(x)))  # add path to dictionary
+age_df['exists'] = age_df['path'].map(os.path.exists)  # add exists to dictionary
+print(age_df['exists'].sum(), 'images found of', age_df.shape[0], 'total')  # print how many images have been found
+age_df['gender'] = age_df['male'].map(lambda x: 'male' if x else 'female')  # convert boolean to string male or female
 boneage_mean = age_df['boneage'].mean()
 boneage_div = 2 * age_df['boneage'].std()
 boneage_mean = 0
@@ -33,7 +33,7 @@ boneage_div = 1.0
 age_df['boneage_zscore'] = age_df['boneage'].map(lambda x: (x - boneage_mean) / boneage_div)
 age_df.dropna(inplace=True)
 age_df.sample(3)
-#age_df[['boneage', 'male', 'boneage_zscore']].hist(figsize=(10, 5))
+# age_df[['boneage', 'male', 'boneage_zscore']].hist(figsize=(10, 5))
 age_df['boneage_category'] = pd.cut(age_df['boneage'], 10)
 
 raw_train_df, valid_df = train_test_split(age_df, test_size=0.2, random_state=2018, stratify=age_df['boneage_category'])
@@ -42,7 +42,7 @@ print('train', raw_train_df.shape[0], 'validation', valid_df.shape[0])
 train_df = raw_train_df.groupby(['boneage_category', 'male']).apply(lambda x: x.sample(500, replace=True)
                                                                     ).reset_index(drop=True)
 print('New Data Size:', train_df.shape[0], 'Old Size:', raw_train_df.shape[0])
-#train_df[['boneage', 'male']].hist(figsize=(10, 5))
+# train_df[['boneage', 'male']].hist(figsize=(10, 5))
 
 IMG_SIZE = (384, 384)  # slightly smaller than vgg16 normally expects
 core_idg = ImageDataGenerator(samplewise_center=False,
