@@ -121,7 +121,7 @@ print('==================================================')
 t_x, t_y = next(train_gen_chest)  # I think always gets the next batch from the data generator
 in_layer = Input(t_x.shape[1:])
 
-conv_base_model = InceptionResNetV2(include_top=True,
+conv_base_model = InceptionResNetV2(include_top=False, # otherwise we would not be able to define our own input size!
                                     weights='imagenet',
                                     input_tensor=None,
                                     input_shape=t_x.shape[1:],
