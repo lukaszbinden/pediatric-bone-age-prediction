@@ -30,7 +30,7 @@ boneage_mean = age_df['boneage'].mean()
 boneage_div = 2 * age_df['boneage'].std()
 boneage_mean = 0
 boneage_div = 1.0
-age_df['boneage_zscore'] = age_df['boneage'].map(lambda x: (x - boneage_mean) / boneage_div)
+age_df['boneage_zscore'] = age_df['boneage'].map(lambda x: (x - boneage_mean) / boneage_div) # creates classes
 age_df.dropna(inplace=True)
 age_df.sample(3)
 # age_df[['boneage', 'male', 'boneage_zscore']].hist(figsize=(10, 5))
