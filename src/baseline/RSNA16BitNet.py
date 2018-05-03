@@ -119,7 +119,7 @@ datagen = ImageDataGenerator(  # 1
     vertical_flip=False)
 datagen.fit(img_train)
 model.fit_generator(datagen.flow(img_train, boneage_train, batch_size=16),
-                    steps_per_epoch = 6,
+                    steps_per_epoch = 600,
                     epochs=15,
                     callbacks=[history, logger, earlystopping, checkpoint, reduceLROnPlat],
                     validation_data=(img_val, boneage_val),
