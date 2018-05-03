@@ -192,11 +192,13 @@ reduceLROnPlat = ReduceLROnPlateau(monitor='val_loss', factor=0.8, patience=10, 
 model.fit_generator(train_gen_chest, validation_data=valid_gen_chest, epochs=15,
                     callbacks=[checkpoint, early, reduceLROnPlat])  # trains the model
 
-
-print('make last couple of conv layers in resnet trainable -->')
-# make last couple of conv layers in resnet trainable
+# make last couple of conv layers in resnet trainable -->
+conv_base_model.trainable = True
+for layer in conv_base_model.layers[0:len(conv_base_model.layers)-5]:
+    layer.trainable = False
 for layer in conv_base_model.layers[-5:]:
     layer.trainable = True
+# make last couple of conv layers in resnet trainable <--
 
 model.compile(loss='mse', optimizer=SGD(lr=1e-4, momentum=0.9), metrics=['accuracy'])
 
