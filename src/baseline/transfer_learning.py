@@ -22,6 +22,8 @@ from keras.preprocessing.image import ImageDataGenerator
 from sklearn.model_selection import train_test_split
 from keras.models import Model, Sequential
 from keras.callbacks import ModelCheckpoint, EarlyStopping, ReduceLROnPlateau
+from keras.optimizers import SGD
+
 
 base_dir = '/var/tmp/studi5/boneage/'
 base_datasets_dir = base_dir + '/datasets/'
@@ -147,7 +149,7 @@ t_x, t_y = next(train_gen_chest)  # gets the next batch from the data generator
 #print(t_x.shape[1:])
 in_layer = Input(t_x.shape[1:])  # instantiate a Keras tensor
 
-conv_base_model = InceptionResNetV2(include_top=False,  # use default InceptionResNetV2 img size -- otherwise we would not be able to define our own input size!
+conv_base_model = InceptionResNetV2(include_top=True,  # use default InceptionResNetV2 img size -- otherwise we would not be able to define our own input size!
                                     weights='imagenet',
                                     input_tensor=None,
                                     #input_shape=t_x.shape[1:],
@@ -160,8 +162,9 @@ features = conv_base_model(in_layer)
 
 # TODO: if output of conv_base_model is 'the 4D tensor output of the last convolutional layer' how do we narrow it down to 1 output?
 classifier = Sequential()
-classifier.add(Flatten(input_shape=conv_base_model.output_shape[1:]))
-classifier.add(Dense(256, activation='relu'))
+print(conv_base_model.output_shape[1:])
+#classifier.add(Flatten(input_shape=conv_base_model.output_shape[1:]))
+classifier.add(Dense(256, activation='relu', input_shape=conv_base_model.output_shape[1:]))
 classifier.add(Dropout(0.5))
 classifier.add(Dense(1, activation='sigmoid'))
 
@@ -180,7 +183,7 @@ print('==================================================')
 weight_path = base_dir + "{}_weights.best.hdf5".format('bone_age')
 
 checkpoint = ModelCheckpoint(weight_path, monitor='val_loss', verbose=1, save_best_only=True, mode='min',
-                             save_weights_only=True) # save the weights
+                             save_weights_only=True)  # save the weights
 
 early = EarlyStopping(monitor="val_loss", mode="min",
                       patience=5)  # probably needs to be more patient, but kaggle time is limited
@@ -189,7 +192,22 @@ reduceLROnPlat = ReduceLROnPlateau(monitor='val_loss', factor=0.8, patience=10, 
                                    cooldown=5, min_lr=0.0001)
 
 model.fit_generator(train_gen_chest, validation_data=valid_gen_chest, epochs=15,
-                    callbacks=[checkpoint, early, reduceLROnPlat]) # trains the model
+                    callbacks=[checkpoint, early, reduceLROnPlat])  # trains the model
+
+
+print('make last couple of conv layers in resnet trainable -->')
+# make last couple of conv layers in resnet trainable
+for layer in conv_base_model.layers[-5:]:
+    layer.trainable = True
+
+model.compile(loss='binary_crossentropy', optimizer=SGD(lr=1e-4, momentum=0.9), metrics=['accuracy'])
+
+model.summary()  # prints the network structure
+
+print('re-train model -->')
+model.fit_generator(train_gen_chest, validation_data=valid_gen_chest, epochs=15,
+                    callbacks=[checkpoint, early, reduceLROnPlat])  # trains the model
+print('re-train model <--')
 
 print('==================================================')
 print('======= Training Model on Boneage Dataset ========')
