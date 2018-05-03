@@ -12,9 +12,9 @@ Run File:
 * ssh studi5@cluster.inf.unibe.ch
 * password: she9ohYe
 * ssh node03
-* cd /var/tmp/studi5/boneage/git/jmcs-atml-bone-age-prediction/src/baseline
-* module load anaconda/3 && export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda-9.0/lib64:/usr/local/cuda-9.0/extras/CUPTI/lib64
-* python file.py
+* [studi5@node03 baseline]$ pwd
+* /var/tmp/studi5/boneage/git/jmcs-atml-bone-age-prediction/src/baseline/
+* see .bash_profile for environment configuration
 
 # First Task Deadline
 Until 01 of May !!!
