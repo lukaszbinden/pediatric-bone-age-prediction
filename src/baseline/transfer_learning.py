@@ -160,13 +160,11 @@ conv_base_model.trainable = False
 
 features = conv_base_model(in_layer)
 
-# TODO: if output of conv_base_model is 'the 4D tensor output of the last convolutional layer' how do we narrow it down to 1 output?
 classifier = Sequential()
 print(conv_base_model.output_shape[1:])
-#classifier.add(Flatten(input_shape=conv_base_model.output_shape[1:]))
 classifier.add(Dense(256, activation='relu', input_shape=conv_base_model.output_shape[1:]))
-classifier.add(Dropout(0.5))
-classifier.add(Dense(1, activation='sigmoid'))
+#classifier.add(Dropout(0.5))
+classifier.add(Dense(1, activation='relu'))
 
 out_layer = classifier(features)
 
@@ -200,7 +198,7 @@ print('make last couple of conv layers in resnet trainable -->')
 for layer in conv_base_model.layers[-5:]:
     layer.trainable = True
 
-model.compile(loss='binary_crossentropy', optimizer=SGD(lr=1e-4, momentum=0.9), metrics=['accuracy'])
+model.compile(loss='mse', optimizer=SGD(lr=1e-4, momentum=0.9), metrics=['accuracy'])
 
 model.summary()  # prints the network structure
 
