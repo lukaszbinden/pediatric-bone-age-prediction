@@ -17,10 +17,10 @@ import os
 
 from keras import Input
 from keras.applications.inception_resnet_v2 import InceptionResNetV2, preprocess_input
-from keras.layers import Dense
+from keras.layers import Dense, Flatten, Dropout
 from keras.preprocessing.image import ImageDataGenerator
 from sklearn.model_selection import train_test_split
-from keras.models import Model
+from keras.models import Model, Sequential
 from keras.callbacks import ModelCheckpoint, EarlyStopping, ReduceLROnPlateau
 
 base_dir = '/var/tmp/studi5/boneage/'
@@ -154,12 +154,18 @@ conv_base_model = InceptionResNetV2(include_top=True,  # use default InceptionRe
                                     #pooling=None,
                                     #classes=1000
                                     )
-conv_base_model.trainable = True
+conv_base_model.trainable = False
 
 features = conv_base_model(in_layer)
 
 # TODO: if output of conv_base_model is 'the 4D tensor output of the last convolutional layer' how do we narrow it down to 1 output?
-out_layer = Dense(1, kernel_initializer='normal')(features)
+classifier = Sequential()
+classifier.add(Flatten(input_shape=conv_base_model.output_shape[1:]))
+classifier.add(Dense(256, activation='relu'))
+classifier.add(Dropout(0.5))
+classifier.add(Dense(1, activation='sigmoid'))
+
+out_layer = classifier(features)
 
 model = Model(inputs=[in_layer], outputs=[out_layer])
 
