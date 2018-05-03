@@ -1,3 +1,6 @@
+#this file is the implementation of "https://16bit.ai/blog/ml-and-future-of-radiology".
+#but currently, the implementation does not include gender info
+#some details need to be improved
 import numpy as np
 import csv
 import random
