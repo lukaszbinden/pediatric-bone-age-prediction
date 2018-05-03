@@ -89,7 +89,7 @@ def Boneage_prediction_model():
     model.compile(loss='mean_absolute_error', optimizer=optimizer)
     return model
 
-train_list_use = LoadDataList('boneage_train_list_use.csv')
+train_list_use = LoadDataList('boneage_train_list_use.csv')#need to be changed
 val_list_use = LoadDataList('boneage_val_list_use.csv')
 
 num_train_sample = len(train_list_use)
