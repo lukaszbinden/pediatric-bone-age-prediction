@@ -23,7 +23,7 @@ from keras.metrics import mean_absolute_error
 import pickle
 
 
-base_bone_dir = '/home/guy/jmcs-atml-bone-age-prediction/datasets/'
+base_bone_dir = '/var/tmp/studi5/boneage/datasets/boneage/'
 age_df = pd.read_csv(os.path.join(base_bone_dir, 'boneage-training-dataset.csv'))  # read csv
 age_df['path'] = age_df['id'].map(lambda x: os.path.join(base_bone_dir, 'boneage-training-dataset',
                                                          '{}.png'.format(x)))  # add path to dictionary
