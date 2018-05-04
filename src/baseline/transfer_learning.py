@@ -17,11 +17,13 @@ import os
 
 from keras import Input
 from keras.applications.inception_resnet_v2 import InceptionResNetV2, preprocess_input
-from keras.layers import Dense
+from keras.layers import Dense, Flatten, Dropout
 from keras.preprocessing.image import ImageDataGenerator
 from sklearn.model_selection import train_test_split
-from keras.models import Model
+from keras.models import Model, Sequential
 from keras.callbacks import ModelCheckpoint, EarlyStopping, ReduceLROnPlateau
+from keras.optimizers import SGD
+
 
 base_dir = '/var/tmp/studi5/boneage/'
 base_datasets_dir = base_dir + '/datasets/'
@@ -112,29 +114,29 @@ valid_gen_chest = flow_from_dataframe(core_idg, valid_df_chest, path_col='path',
 print('==================================================')
 print('========== Reading RSNA Boneage Dataset ==========')
 print('==================================================')
-# base_boneage_dir = base_datasets_dir + 'boneage/'
-# class_str_col = 'boneage'
-#
-# boneage_df = pd.read_csv(os.path.join(base_boneage_dir, 'boneage-training-dataset.csv'))
-# boneage_df['path'] = boneage_df['id'].map(lambda x: os.path.join(base_boneage_dir, 'boneage-training-dataset',
-#                                                                  '{}.png'.format(x)))  # create path from id
-#
-# boneage_df['exists'] = boneage_df['path'].map(os.path.exists)
-# print(boneage_df['exists'].sum(), 'images found of', boneage_df.shape[0], 'total')
-# # boneage_df['boneage_category'] = pd.cut(boneage_df[class_str_col], 10)
-#
-# train_df_boneage, valid_df_boneage = train_test_split(boneage_df, test_size=0.2,
-#                                                       random_state=2018)  # ,stratify=boneage_df['boneage_category'])
-# print('train', train_df_boneage.shape[0], 'validation', valid_df_boneage.shape[0])
-#
-# train_gen_boneage = flow_from_dataframe(core_idg, train_df_boneage, path_col='path', y_col=class_str_col,
-#                                         target_size=IMG_SIZE,
-#                                         color_mode='rgb', batch_size=32)
-#
-# valid_gen_boneage = flow_from_dataframe(core_idg, valid_df_boneage, path_col='path', y_col=class_str_col,
-#                                         target_size=IMG_SIZE,
-#                                         color_mode='rgb',
-#                                         batch_size=256)  # we can use much larger batches for evaluation
+base_boneage_dir = base_datasets_dir + 'boneage/'
+class_str_col = 'boneage'
+
+boneage_df = pd.read_csv(os.path.join(base_boneage_dir, 'boneage-training-dataset.csv'))
+boneage_df['path'] = boneage_df['id'].map(lambda x: os.path.join(base_boneage_dir, 'boneage-training-dataset',
+                                                                 '{}.png'.format(x)))  # create path from id
+
+boneage_df['exists'] = boneage_df['path'].map(os.path.exists)
+print(boneage_df['exists'].sum(), 'images found of', boneage_df.shape[0], 'total')
+# boneage_df['boneage_category'] = pd.cut(boneage_df[class_str_col], 10)
+
+train_df_boneage, valid_df_boneage = train_test_split(boneage_df, test_size=0.2,
+                                                      random_state=2018)  # ,stratify=boneage_df['boneage_category'])
+print('train', train_df_boneage.shape[0], 'validation', valid_df_boneage.shape[0])
+
+train_gen_boneage = flow_from_dataframe(core_idg, train_df_boneage, path_col='path', y_col=class_str_col,
+                                        target_size=IMG_SIZE,
+                                        color_mode='rgb', batch_size=32)
+
+valid_gen_boneage = flow_from_dataframe(core_idg, valid_df_boneage, path_col='path', y_col=class_str_col,
+                                        target_size=IMG_SIZE,
+                                        color_mode='rgb',
+                                        batch_size=256)  # we can use much larger batches for evaluation
 
 print('==================================================')
 print('================= Building Model =================')
@@ -154,12 +156,17 @@ conv_base_model = InceptionResNetV2(include_top=True,  # use default InceptionRe
                                     #pooling=None,
                                     #classes=1000
                                     )
-conv_base_model.trainable = True
+conv_base_model.trainable = False
 
 features = conv_base_model(in_layer)
 
-# TODO: if output of conv_base_model is 'the 4D tensor output of the last convolutional layer' how do we narrow it down to 1 output?
-out_layer = Dense(1, kernel_initializer='normal')(features)
+classifier = Sequential()
+print(conv_base_model.output_shape[1:])
+classifier.add(Dense(256, activation='relu', input_shape=conv_base_model.output_shape[1:]))
+#classifier.add(Dropout(0.5))
+classifier.add(Dense(1, activation='relu'))
+
+out_layer = classifier(features)
 
 model = Model(inputs=[in_layer], outputs=[out_layer])
 
@@ -167,23 +174,40 @@ model.compile(optimizer='adam', loss='mse')
 
 model.summary()  # prints the network structure
 
-# print('==================================================')
-# print('========= Training Model on Chest Dataset ========')
-# print('==================================================')
-#
-# weight_path = base_dir + "{}_weights.best.hdf5".format('bone_age')
-#
-# checkpoint = ModelCheckpoint(weight_path, monitor='val_loss', verbose=1, save_best_only=True, mode='min',
-#                              save_weights_only=True) # save the weights
-#
-# early = EarlyStopping(monitor="val_loss", mode="min",
-#                       patience=5)  # probably needs to be more patient, but kaggle time is limited
-#
-# reduceLROnPlat = ReduceLROnPlateau(monitor='val_loss', factor=0.8, patience=10, verbose=1, mode='auto', epsilon=0.0001,
-#                                    cooldown=5, min_lr=0.0001)
-#
-# model.fit_generator(train_gen_chest, validation_data=valid_gen_chest, epochs=15,
-#                     callbacks=[checkpoint, early, reduceLROnPlat]) # trains the model
+print('==================================================')
+print('========= Training Model on Chest Dataset ========')
+print('==================================================')
+
+weight_path = base_dir + "{}_weights.best.hdf5".format('bone_age')
+
+checkpoint = ModelCheckpoint(weight_path, monitor='val_loss', verbose=1, save_best_only=True, mode='min',
+                             save_weights_only=True)  # save the weights
+
+early = EarlyStopping(monitor="val_loss", mode="min",
+                      patience=5)  # probably needs to be more patient, but kaggle time is limited
+
+reduceLROnPlat = ReduceLROnPlateau(monitor='val_loss', factor=0.8, patience=10, verbose=1, mode='auto', epsilon=0.0001,
+                                   cooldown=5, min_lr=0.0001)
+
+model.fit_generator(train_gen_chest, validation_data=valid_gen_chest, epochs=15,
+                    callbacks=[checkpoint, early, reduceLROnPlat])  # trains the model
+
+# make last couple of conv layers in resnet trainable -->
+conv_base_model.trainable = True
+for layer in conv_base_model.layers[0:len(conv_base_model.layers)-5]:
+    layer.trainable = False
+for layer in conv_base_model.layers[-5:]:
+    layer.trainable = True
+# make last couple of conv layers in resnet trainable <--
+
+model.compile(loss='mse', optimizer=SGD(lr=1e-4, momentum=0.9), metrics=['accuracy'])
+
+model.summary()  # prints the network structure
+
+print('re-train model -->')
+model.fit_generator(train_gen_chest, validation_data=valid_gen_chest, epochs=15,
+                    callbacks=[checkpoint, early, reduceLROnPlat])  # trains the model
+print('re-train model <--')
 
 print('==================================================')
 print('======= Training Model on Boneage Dataset ========')
