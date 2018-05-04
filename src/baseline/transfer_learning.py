@@ -23,6 +23,7 @@ from sklearn.model_selection import train_test_split
 from keras.models import Model, Sequential
 from keras.callbacks import ModelCheckpoint, EarlyStopping, ReduceLROnPlateau
 from keras.optimizers import SGD
+from keras.metrics import mean_absolute_error
 
 
 base_dir = '/var/tmp/studi5/boneage/'
@@ -133,10 +134,12 @@ train_gen_boneage = flow_from_dataframe(core_idg, train_df_boneage, path_col='pa
                                         target_size=IMG_SIZE,
                                         color_mode='rgb', batch_size=32)
 
-valid_gen_boneage = flow_from_dataframe(core_idg, valid_df_boneage, path_col='path', y_col=class_str_col,
-                                        target_size=IMG_SIZE,
-                                        color_mode='rgb',
-                                        batch_size=256)  # we can use much larger batches for evaluation
+# used a fixed dataset for evaluating the algorithm
+test_X, test_Y = next(
+    flow_from_dataframe(core_idg, valid_df_boneage, path_col='path', y_col=class_str_col,
+        target_size=IMG_SIZE,
+        color_mode='rgb',
+        batch_size=256))  # we can use much larger batches for evaluation
 
 print('==================================================')
 print('================= Building Model =================')
@@ -178,7 +181,7 @@ print('==================================================')
 print('========= Training Model on Chest Dataset ========')
 print('==================================================')
 
-weight_path = base_dir + "{}_weights.best.hdf5".format('bone_age')
+weight_path = base_dir + "{}_weights.best.hdf5".format('chest_age')
 
 checkpoint = ModelCheckpoint(weight_path, monitor='val_loss', verbose=1, save_best_only=True, mode='min',
                              save_weights_only=True)  # save the weights
@@ -212,6 +215,32 @@ print('re-train model <--')
 print('==================================================')
 print('======= Training Model on Boneage Dataset ========')
 print('==================================================')
+
+
+def mae_months(in_gt, in_pred):
+    return mean_absolute_error(boneage_div * in_gt, boneage_div * in_pred)
+
+
+model.compile(optimizer='adam', loss='mse', metrics=[mae_months])
+
+model.summary()
+
+weight_path = base_dir + "{}_weights.best.hdf5".format('bone_age')
+
+checkpoint = ModelCheckpoint(weight_path, monitor='val_loss', verbose=1,
+                             save_best_only=True, mode='min', save_weights_only=True)
+
+reduceLROnPlat = ReduceLROnPlateau(monitor='val_loss', factor=0.8, patience=10, verbose=1, mode='auto', epsilon=0.0001,
+                                   cooldown=5, min_lr=0.0001)
+early = EarlyStopping(monitor="val_loss",
+                      mode="min",
+                      patience=5)  # probably needs to be more patient, but kaggle time is limited
+callbacks_list = [checkpoint, early, reduceLROnPlat]
+
+model.fit_generator(train_gen_boneage, validation_data=(test_X, test_Y), epochs=15, callbacks=callbacks_list)
+
+
+
 
 print('==================================================')
 print('================ Evaluating Model ================')
