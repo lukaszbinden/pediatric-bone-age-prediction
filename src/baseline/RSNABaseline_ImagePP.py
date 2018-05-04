@@ -19,14 +19,13 @@ from keras.models import Model
 from keras.layers import BatchNormalization
 from keras.callbacks import ModelCheckpoint, LearningRateScheduler, EarlyStopping, ReduceLROnPlateau
 from keras.metrics import mean_absolute_error
-
 import pickle
 
-
-base_bone_dir = '/var/tmp/studi5/boneage/datasets/boneage/'
+#/home/guy/jmcs-atml-bone-age-prediction/datasets
+#/var/tmp/studi5/boneage/datasets/boneage/
+base_bone_dir = '/home/guy/jmcs-atml-bone-age-prediction/datasets'
 age_df = pd.read_csv(os.path.join(base_bone_dir, 'boneage-training-dataset.csv'))  # read csv
-age_df['path'] = age_df['id'].map(lambda x: os.path.join(base_bone_dir, 'boneage-training-dataset',
-                                                         '{}.png'.format(x)))  # add path to dictionary
+age_df['path'] = age_df['id'].map(lambda x: os.path.join(base_bone_dir, 'boneage-training-dataset','{}.png'.format(x)))  # add path to dictionary
 
 
 age_df['exists'] = age_df['path'].map(os.path.exists)  # add exists to dictionary
@@ -44,32 +43,44 @@ age_df['boneage_category'] = pd.cut(age_df['boneage'], 10)
 
 raw_train_df, valid_df = train_test_split(age_df, test_size=0.2, random_state=2018, stratify=age_df['boneage_category'])
 print('train', raw_train_df.shape[0], 'validation', valid_df.shape[0])
+
 # Balance the distribution in the training set
-train_df = raw_train_df.groupby(['boneage_category', 'male']).apply(lambda x: x.sample(500, replace=True)
-                                                                    ).reset_index(drop=True)
+train_df = raw_train_df.groupby(['boneage_category', 'male']).apply(lambda x: x.sample(500, replace=True)).reset_index(drop=True)
 print('New Data Size:', train_df.shape[0], 'Old Size:', raw_train_df.shape[0])
 # train_df[['boneage', 'male']].hist(figsize=(10, 5))
 
 IMG_SIZE = (384, 384)  # slightly smaller than vgg16 normally expects
-core_idg = ImageDataGenerator(samplewise_center=False,
+core_idg = ImageDataGenerator(#featurewise_center = True/False
+                              samplewise_center=False,
+                              #featurewise_std_normalization = True/False,
                               samplewise_std_normalization=False,
+                              #zca_epsilon=True,
+                              zca_whitening=True,
+                              rotation_range=5,
+                              width_shift_range=0.15,
+                              #float = ,
+                              #int = ,
+                              shear_range=0.01,
+                              zoom_range=0.25,
+                              #channel_shift-range = 
+                              fill_mode='nearest',
+                              #cval =   
                               horizontal_flip=True,
                               vertical_flip=True,
-                              height_shift_range=0.15,
-                              width_shift_range=0.15,
-                              rotation_range=5,
-                              shear_range=0.01,
-                              fill_mode='nearest',
-                              zoom_range=0.25,
-                              preprocessing_function=preprocess_input)
+                              #rescale = 
+                              preprocessing_function=preprocess_input,
+                              #data_format = 
+                              #validation_split
+                              height_shift_range=0.15
+                              )
 
+#core_idg.fit(train_df)
+#core_idg.fit(valid_df)
 
 def flow_from_dataframe(img_data_gen, in_df, path_col, y_col, **dflow_args):
     base_dir = os.path.dirname(in_df[path_col].values[0])
     print('## Ignore next message from keras, values are replaced anyways')
-    df_gen = img_data_gen.flow_from_directory(base_dir,
-                                              class_mode='sparse',
-                                              **dflow_args)
+    df_gen = img_data_gen.flow_from_directory(base_dir, class_mode='sparse', **dflow_args)
     df_gen.filenames = in_df[path_col].values
     df_gen.classes = np.stack(in_df[y_col].values)
     df_gen.samples = in_df.shape[0]
@@ -81,15 +92,12 @@ def flow_from_dataframe(img_data_gen, in_df, path_col, y_col, **dflow_args):
     return df_gen
 
 
-train_gen = flow_from_dataframe(core_idg, train_df, path_col='path', y_col='boneage_zscore', target_size=IMG_SIZE,
-                                color_mode='rgb', batch_size=32)
+train_gen = flow_from_dataframe(core_idg, train_df, path_col='path', y_col='boneage_zscore', target_size=IMG_SIZE, color_mode='rgb', batch_size=32)
 
-valid_gen = flow_from_dataframe(core_idg, valid_df, path_col='path', y_col='boneage_zscore', target_size=IMG_SIZE,
-                                color_mode='rgb', batch_size=256)  # we can use much larger batches for evaluation
+valid_gen = flow_from_dataframe(core_idg, valid_df, path_col='path', y_col='boneage_zscore', target_size=IMG_SIZE, color_mode='rgb', batch_size=256)  # we can use much larger batches for evaluation
 
 # used a fixed dataset for evaluating the algorithm
-test_X, test_Y = next(flow_from_dataframe(core_idg, valid_df, path_col='path', y_col='boneage_zscore', target_size=IMG_SIZE,
-                        color_mode='rgb', batch_size=256))  # one big batch
+test_X, test_Y = next(flow_from_dataframe(core_idg, valid_df, path_col='path', y_col='boneage_zscore', target_size=IMG_SIZE, color_mode='rgb', batch_size=256))  # one big batch
 
 t_x, t_y = next(train_gen)
 in_lay = Input(t_x.shape[1:])
@@ -141,5 +149,5 @@ callbacks_list = [checkpoint, early, reduceLROnPlat]
 
 history = bone_age_model.fit_generator(train_gen, validation_data=(test_X, test_Y), epochs=15, callbacks=callbacks_list)
 
-with open('/var/tmp/studi5/boneage/git/jmcs-atml-bone-age-prediction/TrainingHistory/', 'wb') as file_pi:
+with open('/var/tmp/studi5/boneage/git/jmcs-atml-bone-age-prediction/TrainingHistory/history_zca_whitening', 'wb') as file_pi:
         pickle.dump(history.history, file_pi)
