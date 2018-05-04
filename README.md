@@ -15,6 +15,9 @@ Run File:
 * [studi5@node03 baseline]$ pwd
 * /var/tmp/studi5/boneage/git/jmcs-atml-bone-age-prediction/src/baseline/
 * see .bash_profile for environment configuration
+* Run the transfer learning program:
+* [studi5@node03 baseline]$ p transfer_learning.py 2>&1 | tee ~/tf_testrun.txt &
+* -> run the program as a separate (non-child) process from the bash process and copy all output to stdout to file ~/tf_testrun.txt as well
 
 # First Task Deadline
 Until 01 of May !!!
