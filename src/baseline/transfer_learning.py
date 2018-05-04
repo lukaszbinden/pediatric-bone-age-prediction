@@ -107,10 +107,10 @@ print('train_chest', raw_train_df_chest.shape[0], 'validation_chest', valid_df_c
 train_df_chest = raw_train_df_chest
 
 train_gen_chest = flow_from_dataframe(core_idg, train_df_chest, path_col='path', y_col=class_str_col, target_size=IMG_SIZE,
-                                      color_mode='rgb', batch_size=32)
+                                      color_mode='rgb', batch_size=256)
 
 valid_gen_chest = flow_from_dataframe(core_idg, valid_df_chest, path_col='path', y_col=class_str_col, target_size=IMG_SIZE,
-                                      color_mode='rgb', batch_size=256)  # we can use much larger batches for evaluation
+                                      color_mode='rgb', batch_size=512)  # we can use much larger batches for evaluation
 
 print('==================================================')
 print('========== Reading RSNA Boneage Dataset ==========')
@@ -132,14 +132,14 @@ print('train', train_df_boneage.shape[0], 'validation', valid_df_boneage.shape[0
 
 train_gen_boneage = flow_from_dataframe(core_idg, train_df_boneage, path_col='path', y_col=class_str_col,
                                         target_size=IMG_SIZE,
-                                        color_mode='rgb', batch_size=32)
+                                        color_mode='rgb', batch_size=256)
 
 # used a fixed dataset for evaluating the algorithm
 test_X, test_Y = next(
     flow_from_dataframe(core_idg, valid_df_boneage, path_col='path', y_col=class_str_col,
         target_size=IMG_SIZE,
         color_mode='rgb',
-        batch_size=256))  # we can use much larger batches for evaluation
+        batch_size=512))  # we can use much larger batches for evaluation
 
 print('==================================================')
 print('================= Building Model =================')
@@ -173,7 +173,7 @@ out_layer = classifier(features)
 
 model = Model(inputs=[in_layer], outputs=[out_layer])
 
-model.compile(optimizer='adam', loss='mse')
+model.compile(optimizer='adam', loss='mse', metrics=['mae'])
 
 model.summary()  # prints the network structure
 
@@ -203,7 +203,7 @@ for layer in conv_base_model.layers[-5:]:
     layer.trainable = True
 # make last couple of conv layers in resnet trainable <--
 
-model.compile(loss='mse', optimizer=SGD(lr=1e-4, momentum=0.9), metrics=['accuracy'])
+model.compile(loss='mse', optimizer=SGD(lr=1e-4, momentum=0.9), metrics=['mae'])
 
 model.summary()  # prints the network structure
 
@@ -238,8 +238,6 @@ early = EarlyStopping(monitor="val_loss",
 callbacks_list = [checkpoint, early, reduceLROnPlat]
 
 model.fit_generator(train_gen_boneage, validation_data=(test_X, test_Y), epochs=15, callbacks=callbacks_list)
-
-
 
 
 print('==================================================')
