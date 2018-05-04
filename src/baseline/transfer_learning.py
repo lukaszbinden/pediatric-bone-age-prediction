@@ -23,6 +23,7 @@ from sklearn.model_selection import train_test_split
 from keras.models import Model, Sequential
 from keras.callbacks import ModelCheckpoint, EarlyStopping, ReduceLROnPlateau
 from keras.optimizers import SGD
+from keras.metrics import mean_absolute_error
 
 
 base_dir = '/var/tmp/studi5/boneage/'
@@ -106,10 +107,10 @@ print('train_chest', raw_train_df_chest.shape[0], 'validation_chest', valid_df_c
 train_df_chest = raw_train_df_chest
 
 train_gen_chest = flow_from_dataframe(core_idg, train_df_chest, path_col='path', y_col=class_str_col, target_size=IMG_SIZE,
-                                      color_mode='rgb', batch_size=32)
+                                      color_mode='rgb', batch_size=256)
 
 valid_gen_chest = flow_from_dataframe(core_idg, valid_df_chest, path_col='path', y_col=class_str_col, target_size=IMG_SIZE,
-                                      color_mode='rgb', batch_size=256)  # we can use much larger batches for evaluation
+                                      color_mode='rgb', batch_size=512)  # we can use much larger batches for evaluation
 
 print('==================================================')
 print('========== Reading RSNA Boneage Dataset ==========')
@@ -131,12 +132,13 @@ print('train', train_df_boneage.shape[0], 'validation', valid_df_boneage.shape[0
 
 train_gen_boneage = flow_from_dataframe(core_idg, train_df_boneage, path_col='path', y_col=class_str_col,
                                         target_size=IMG_SIZE,
-                                        color_mode='rgb', batch_size=32)
+                                        color_mode='rgb', batch_size=256)
 
+# used a fixed dataset for evaluating the algorithm
 valid_gen_boneage = flow_from_dataframe(core_idg, valid_df_boneage, path_col='path', y_col=class_str_col,
                                         target_size=IMG_SIZE,
                                         color_mode='rgb',
-                                        batch_size=256)  # we can use much larger batches for evaluation
+                                        batch_size=512)  # we can use much larger batches for evaluation
 
 print('==================================================')
 print('================= Building Model =================')
@@ -170,7 +172,7 @@ out_layer = classifier(features)
 
 model = Model(inputs=[in_layer], outputs=[out_layer])
 
-model.compile(optimizer='adam', loss='mse')
+model.compile(optimizer='adam', loss='mse', metrics=['mae'])
 
 model.summary()  # prints the network structure
 
@@ -178,7 +180,7 @@ print('==================================================')
 print('========= Training Model on Chest Dataset ========')
 print('==================================================')
 
-weight_path = base_dir + "{}_weights.best.hdf5".format('bone_age')
+weight_path = base_dir + "{}_weights.best.hdf5".format('chest_age')
 
 checkpoint = ModelCheckpoint(weight_path, monitor='val_loss', verbose=1, save_best_only=True, mode='min',
                              save_weights_only=True)  # save the weights
@@ -200,7 +202,7 @@ for layer in conv_base_model.layers[-5:]:
     layer.trainable = True
 # make last couple of conv layers in resnet trainable <--
 
-model.compile(loss='mse', optimizer=SGD(lr=1e-4, momentum=0.9), metrics=['accuracy'])
+model.compile(loss='mse', optimizer=SGD(lr=1e-4, momentum=0.9), metrics=['mae'])
 
 model.summary()  # prints the network structure
 
@@ -212,6 +214,20 @@ print('re-train model <--')
 print('==================================================')
 print('======= Training Model on Boneage Dataset ========')
 print('==================================================')
+
+
+model.compile(optimizer='adam', loss='mse', metrics=["mae"])
+
+model.summary()
+
+weight_path = base_dir + "{}_weights.best.hdf5".format('bone_age')
+
+checkpoint = ModelCheckpoint(weight_path, monitor='val_loss', verbose=1,
+                             save_best_only=True, mode='min', save_weights_only=True)
+
+model.fit_generator(train_gen_boneage, validation_data=valid_gen_boneage, epochs=15,
+                            callbacks=[checkpoint, early, reduceLROnPlat])
+
 
 print('==================================================')
 print('================ Evaluating Model ================')
