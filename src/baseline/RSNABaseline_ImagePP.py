@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd  # data processing, CSV file I/O (e.g. pd.read_csv)
 import matplotlib.pyplot as plt  # showing and rendering figures
+
 # io related
 from skimage.io import imread
 import os
@@ -19,10 +20,15 @@ from keras.layers import BatchNormalization
 from keras.callbacks import ModelCheckpoint, LearningRateScheduler, EarlyStopping, ReduceLROnPlateau
 from keras.metrics import mean_absolute_error
 
+import pickle
+
+
 base_bone_dir = '/var/tmp/studi5/boneage/datasets/boneage/'
 age_df = pd.read_csv(os.path.join(base_bone_dir, 'boneage-training-dataset.csv'))  # read csv
 age_df['path'] = age_df['id'].map(lambda x: os.path.join(base_bone_dir, 'boneage-training-dataset',
                                                          '{}.png'.format(x)))  # add path to dictionary
+
+
 age_df['exists'] = age_df['path'].map(os.path.exists)  # add exists to dictionary
 print(age_df['exists'].sum(), 'images found of', age_df.shape[0], 'total')  # print how many images have been found
 age_df['gender'] = age_df['male'].map(lambda x: 'male' if x else 'female')  # convert boolean to string male or female
@@ -48,7 +54,7 @@ IMG_SIZE = (384, 384)  # slightly smaller than vgg16 normally expects
 core_idg = ImageDataGenerator(samplewise_center=False,
                               samplewise_std_normalization=False,
                               horizontal_flip=True,
-                              vertical_flip=False,
+                              vertical_flip=True,
                               height_shift_range=0.15,
                               width_shift_range=0.15,
                               rotation_range=5,
@@ -82,8 +88,7 @@ valid_gen = flow_from_dataframe(core_idg, valid_df, path_col='path', y_col='bone
                                 color_mode='rgb', batch_size=256)  # we can use much larger batches for evaluation
 
 # used a fixed dataset for evaluating the algorithm
-test_X, test_Y = next(
-    flow_from_dataframe(core_idg, valid_df, path_col='path', y_col='boneage_zscore', target_size=IMG_SIZE,
+test_X, test_Y = next(flow_from_dataframe(core_idg, valid_df, path_col='path', y_col='boneage_zscore', target_size=IMG_SIZE,
                         color_mode='rgb', batch_size=256))  # one big batch
 
 t_x, t_y = next(train_gen)
@@ -97,16 +102,12 @@ bn_features = BatchNormalization()(pt_features)
 
 # here we do an attention mechanism to turn pixels in the GAP on and off
 
-attn_layer = Conv2D(64, kernel_size=(1, 1), padding='same', activation='relu')(bn_features)
-attn_layer = Conv2D(16, kernel_size=(1, 1), padding='same', activation='relu')(attn_layer)
-attn_layer = LocallyConnected2D(1,
-                                kernel_size=(1, 1),
-                                padding='valid',
-                                activation='sigmoid')(attn_layer)
+attn_layer = Conv2D(64, kernel_size=(5, 5), padding='same', activation='relu')(bn_features)
+attn_layer = Conv2D(16, kernel_size=(3, 3), padding='same', activation='relu')(attn_layer)
+attn_layer = LocallyConnected2D(1, kernel_size=(1, 1), padding='valid', activation='sigmoid')(attn_layer)
 # fan it out to all of the channels
 up_c2_w = np.ones((1, 1, 1, pt_depth))
-up_c2 = Conv2D(pt_depth, kernel_size=(1, 1), padding='same',
-               activation='linear', use_bias=False, weights=[up_c2_w])
+up_c2 = Conv2D(pt_depth, kernel_size=(1, 1), padding='same', activation='linear', use_bias=False, weights=[up_c2_w])
 up_c2.trainable = False
 attn_layer = up_c2(attn_layer)
 
@@ -125,24 +126,20 @@ def mae_months(in_gt, in_pred):
     return mean_absolute_error(boneage_div * in_gt, boneage_div * in_pred)
 
 
-bone_age_model.compile(optimizer='adam', loss='mse',
-                       metrics=[mae_months])
+loss = bone_age_model.compile(optimizer='adam', loss='mse', metrics=[mae_months])
 
 bone_age_model.summary()
 
 weight_path = base_bone_dir + "{}_weights.best.hdf5".format('bone_age')
 
-checkpoint = ModelCheckpoint(weight_path, monitor='val_loss', verbose=1,
-                             save_best_only=True, mode='min', save_weights_only=True)
+checkpoint = ModelCheckpoint(weight_path, monitor='val_loss', verbose=1, save_best_only=True, mode='min', save_weights_only=True)
 
-reduceLROnPlat = ReduceLROnPlateau(monitor='val_loss', factor=0.8, patience=10, verbose=1, mode='auto', epsilon=0.0001,
-                                   cooldown=5, min_lr=0.0001)
-early = EarlyStopping(monitor="val_loss",
-                      mode="min",
-                      patience=5)  # probably needs to be more patient, but kaggle time is limited
+reduceLROnPlat = ReduceLROnPlateau(monitor='val_loss', factor=0.8, patience=10, verbose=1, mode='auto', epsilon=0.0001, cooldown=5, min_lr=0.0001)
+
+early = EarlyStopping(monitor="val_loss", mode="min", patience=5)  # probably needs to be more patient, but kaggle time is limited
 callbacks_list = [checkpoint, early, reduceLROnPlat]
 
-bone_age_model.fit_generator(train_gen,
-                             validation_data=(test_X, test_Y),
-                             epochs=15,
-                             callbacks=callbacks_list)
+history = bone_age_model.fit_generator(train_gen, validation_data=(test_X, test_Y), epochs=15, callbacks=callbacks_list)
+
+with open('/var/tmp/studi5/boneage/git/jmcs-atml-bone-age-prediction/TrainingHistory/', 'wb') as file_pi:
+        pickle.dump(history.history, file_pi)
