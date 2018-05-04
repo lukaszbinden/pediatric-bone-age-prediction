@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd  # data processing, CSV file I/O (e.g. pd.read_csv)
 import matplotlib.pyplot as plt  # showing and rendering figures
+
 # io related
 from skimage.io import imread
 import os
@@ -19,10 +20,17 @@ from keras.layers import BatchNormalization
 from keras.callbacks import ModelCheckpoint, LearningRateScheduler, EarlyStopping, ReduceLROnPlateau
 from keras.metrics import mean_absolute_error
 
-base_bone_dir = '/var/tmp/studi5/boneage/datasets/boneage/'
+import pickle
+
+
+base_bone_dir = '/home/guy/jmcs-atml-bone-age-prediction/datasets/'
 age_df = pd.read_csv(os.path.join(base_bone_dir, 'boneage-training-dataset.csv'))  # read csv
 age_df['path'] = age_df['id'].map(lambda x: os.path.join(base_bone_dir, 'boneage-training-dataset',
                                                          '{}.png'.format(x)))  # add path to dictionary
+
+result_path = '/results_transfer/'
+
+
 age_df['exists'] = age_df['path'].map(os.path.exists)  # add exists to dictionary
 print(age_df['exists'].sum(), 'images found of', age_df.shape[0], 'total')  # print how many images have been found
 age_df['gender'] = age_df['male'].map(lambda x: 'male' if x else 'female')  # convert boolean to string male or female
@@ -48,7 +56,7 @@ IMG_SIZE = (384, 384)  # slightly smaller than vgg16 normally expects
 core_idg = ImageDataGenerator(samplewise_center=False,
                               samplewise_std_normalization=False,
                               horizontal_flip=True,
-                              vertical_flip=False,
+                              vertical_flip=True,
                               height_shift_range=0.15,
                               width_shift_range=0.15,
                               rotation_range=5,
@@ -97,8 +105,8 @@ bn_features = BatchNormalization()(pt_features)
 
 # here we do an attention mechanism to turn pixels in the GAP on and off
 
-attn_layer = Conv2D(64, kernel_size=(1, 1), padding='same', activation='relu')(bn_features)
-attn_layer = Conv2D(16, kernel_size=(1, 1), padding='same', activation='relu')(attn_layer)
+attn_layer = Conv2D(64, kernel_size=(5, 5), padding='same', activation='relu')(bn_features)
+attn_layer = Conv2D(16, kernel_size=(3, 3), padding='same', activation='relu')(attn_layer)
 attn_layer = LocallyConnected2D(1,
                                 kernel_size=(1, 1),
                                 padding='valid',
@@ -125,7 +133,7 @@ def mae_months(in_gt, in_pred):
     return mean_absolute_error(boneage_div * in_gt, boneage_div * in_pred)
 
 
-bone_age_model.compile(optimizer='adam', loss='mse',
+loss = bone_age_model.compile(optimizer='adam', loss='mse',
                        metrics=[mae_months])
 
 bone_age_model.summary()
@@ -142,7 +150,10 @@ early = EarlyStopping(monitor="val_loss",
                       patience=5)  # probably needs to be more patient, but kaggle time is limited
 callbacks_list = [checkpoint, early, reduceLROnPlat]
 
-bone_age_model.fit_generator(train_gen,
+history = bone_age_model.fit_generator(train_gen,
                              validation_data=(test_X, test_Y),
-                             epochs=15,
+                             epochs=1,
                              callbacks=callbacks_list)
+
+with open('/trainHistoryDict', 'wb') as file_pi:
+        pickle.dump(history.history, file_pi)
