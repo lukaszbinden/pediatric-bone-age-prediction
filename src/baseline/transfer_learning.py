@@ -23,6 +23,7 @@ from sklearn.model_selection import train_test_split
 from keras.models import Model, Sequential
 from keras.callbacks import ModelCheckpoint, EarlyStopping, ReduceLROnPlateau
 from keras.optimizers import SGD
+from keras.metrics import mean_absolute_error
 
 
 base_dir = '/var/tmp/studi5/boneage/'
@@ -133,10 +134,11 @@ train_gen_boneage = flow_from_dataframe(core_idg, train_df_boneage, path_col='pa
                                         target_size=IMG_SIZE,
                                         color_mode='rgb', batch_size=256)
 
+# used a fixed dataset for evaluating the algorithm
 valid_gen_boneage = flow_from_dataframe(core_idg, valid_df_boneage, path_col='path', y_col=class_str_col,
                                         target_size=IMG_SIZE,
                                         color_mode='rgb',
-                                        batch_size=512)  # we can use much larger batches for evaluation
+                                        batch_size=512))  # we can use much larger batches for evaluation
 
 print('==================================================')
 print('================= Building Model =================')
@@ -178,7 +180,7 @@ print('==================================================')
 print('========= Training Model on Chest Dataset ========')
 print('==================================================')
 
-weight_path = base_dir + "{}_weights.best.hdf5".format('bone_age')
+weight_path = base_dir + "{}_weights.best.hdf5".format('chest_age')
 
 checkpoint = ModelCheckpoint(weight_path, monitor='val_loss', verbose=1, save_best_only=True, mode='min',
                              save_weights_only=True)  # save the weights
@@ -212,6 +214,20 @@ print('re-train model <--')
 print('==================================================')
 print('======= Training Model on Boneage Dataset ========')
 print('==================================================')
+
+
+model.compile(optimizer='adam', loss='mse', metrics=["mae"])
+
+model.summary()
+
+weight_path = base_dir + "{}_weights.best.hdf5".format('bone_age')
+
+checkpoint = ModelCheckpoint(weight_path, monitor='val_loss', verbose=1,
+                             save_best_only=True, mode='min', save_weights_only=True)
+
+model.fit_generator(train_gen_boneage, validation_data=valid_gen_boneage, epochs=15,
+                            callbacks=[checkpoint, early, reduceLROnPlat])
+
 
 print('==================================================')
 print('================ Evaluating Model ================')
