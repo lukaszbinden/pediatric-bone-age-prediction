@@ -22,11 +22,11 @@ from keras.preprocessing.image import ImageDataGenerator
 from sklearn.model_selection import train_test_split
 from keras.models import Model, Sequential
 from keras.callbacks import ModelCheckpoint, EarlyStopping, ReduceLROnPlateau
-from keras.optimizers import SGD
+from keras.optimizers import SGD, Adam
 from keras.metrics import mean_absolute_error
 
 # hyperparameters
-NUM_EPOCHS = 3
+NUM_EPOCHS = 25
 LEARNING_RATE = 0.0001
 BATCH_SIZE_TRAIN = 128
 BATCH_SIZE_VAL = 256
@@ -209,7 +209,7 @@ for layer in conv_base_model.layers[-5:]:
     layer.trainable = True
 # make last couple of conv layers in resnet trainable <--
 
-model.compile(loss='mse', optimizer=SGD(lr=LEARNING_RATE, momentum=0.9), metrics=['mae'])
+model.compile(loss='mse', optimizer=SGD(lr=LEARNING_RATE*0.1, momentum=0.9), metrics=['mae'])
 
 model.summary()  # prints the network structure
 
@@ -224,7 +224,7 @@ print('======= Training Model on Boneage Dataset ========')
 print('==================================================')
 
 
-model.compile(optimizer='adam', loss='mse', metrics=["mae"])
+model.compile(optimizer=Adam(lr=LEARNING_RATE*0.1), loss='mse', metrics=["mae"])
 
 model.summary()
 
