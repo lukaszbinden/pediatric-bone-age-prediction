@@ -27,7 +27,7 @@ from keras.metrics import mean_absolute_error
 
 # hyperparameters
 NUM_EPOCHS = 25
-LEARNING_RATE = 0.0001
+LEARNING_RATE = 0.001
 BATCH_SIZE_TRAIN = 128
 BATCH_SIZE_VAL = 256
 base_dir = '/var/tmp/studi5/boneage/'
@@ -41,17 +41,22 @@ print('==================================================')
 print('============ Preprocessing Image Data ============')
 print('==================================================')
 # Generate batches of tensor image data with real-time data augmentation. The data will be looped over (in batches).
-core_idg = ImageDataGenerator(samplewise_center=False,
-                              samplewise_std_normalization=False,
-                              horizontal_flip=True,
-                              vertical_flip=False,
-                              height_shift_range=0.15,
-                              width_shift_range=0.15,
-                              rotation_range=5,
-                              shear_range=0.01,
-                              fill_mode='nearest',
-                              zoom_range=0.25,
-                              preprocessing_function=preprocess_input)
+# core_idg = ImageDataGenerator(samplewise_center=False,
+#                               samplewise_std_normalization=False,
+#                               horizontal_flip=True,
+#                               vertical_flip=False,
+#                               height_shift_range=0.15,
+#                               width_shift_range=0.15,
+#                               rotation_range=5,
+#                               shear_range=0.01,
+#                               fill_mode='nearest',
+#                               zoom_range=0.25,
+#                               preprocessing_function=preprocess_input)
+
+core_idg = ImageDataGenerator(rotation_range=20, width_shift_range=0.2, height_shift_range=0.2,
+                                   zoom_range=0.2, horizontal_flip=True)
+
+val_idg = ImageDataGenerator(width_shift_range=0.25, height_shift_range=0.25, horizontal_flip=True)
 
 print('==================================================')
 print('============ Creating Data Generators ============')
@@ -113,7 +118,7 @@ train_df_chest = raw_train_df_chest
 train_gen_chest = flow_from_dataframe(core_idg, train_df_chest, path_col='path', y_col=class_str_col, target_size=IMG_SIZE,
                                       color_mode='rgb', batch_size=BATCH_SIZE_TRAIN)
 
-valid_gen_chest = flow_from_dataframe(core_idg, valid_df_chest, path_col='path', y_col=class_str_col, target_size=IMG_SIZE,
+valid_gen_chest = flow_from_dataframe(val_idg, valid_df_chest, path_col='path', y_col=class_str_col, target_size=IMG_SIZE,
                                       color_mode='rgb', batch_size=BATCH_SIZE_VAL)  # we can use much larger batches for evaluation
 
 print('==================================================')
@@ -176,7 +181,8 @@ out_layer = classifier(features)
 
 model = Model(inputs=[in_layer], outputs=[out_layer])
 
-model.compile(optimizer='adam', loss='mse', metrics=['mae'])
+adam = Adam(lr=LEARNING_RATE, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0)
+model.compile(optimizer=adam, loss='mse', metrics=['mae'])
 
 model.summary()  # prints the network structure
 
@@ -224,14 +230,18 @@ print('======= Training Model on Boneage Dataset ========')
 print('==================================================')
 
 
-model.compile(optimizer=Adam(lr=LEARNING_RATE*0.1), loss='mse', metrics=["mae"])
+adam = Adam(lr=LEARNING_RATE*0.1, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0)
+model.compile(optimizer=adam, loss='mse', metrics=["mae"])
 
 model.summary()
 
 weight_path = base_dir + "{}_weights.best.hdf5".format('bone_age')
 
 checkpoint = ModelCheckpoint(weight_path, monitor='val_loss', verbose=1,
-                             save_best_only=True, mode='min', save_weights_only=True)
+                                save_best_only=True, mode='min', save_weights_only=True)
+
+reduceLROnPlat = ReduceLROnPlateau(monitor='val_loss', factor=0.8, patience=10, verbose=1,
+                                mode='auto', epsilon=0.0001, cooldown=5, min_lr=LEARNING_RATE*0.1)
 
 history = model.fit_generator(train_gen_boneage, validation_data=valid_gen_boneage, epochs=NUM_EPOCHS,
                             callbacks=[checkpoint, early, reduceLROnPlat])
