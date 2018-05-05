@@ -19,7 +19,9 @@ from keras.models import Model
 from keras.layers import BatchNormalization
 from keras.callbacks import ModelCheckpoint, LearningRateScheduler, EarlyStopping, ReduceLROnPlateau
 from keras.metrics import mean_absolute_error
+
 import pickle
+from skimage.exposure import rescale_intensity
 
 #/home/guy/jmcs-atml-bone-age-prediction/datasets
 #/var/tmp/studi5/boneage/datasets/boneage/
@@ -49,18 +51,24 @@ train_df = raw_train_df.groupby(['boneage_category', 'male']).apply(lambda x: x.
 print('New Data Size:', train_df.shape[0], 'Old Size:', raw_train_df.shape[0])
 # train_df[['boneage', 'male']].hist(figsize=(10, 5))
 
+def prepro(x):
+    for i in range(x.shape[2]):
+         x[i] = rescale_intensity(x[i])   
+    return x
+
+
 IMG_SIZE = (384, 384)  # slightly smaller than vgg16 normally expects
 core_idg = ImageDataGenerator(#featurewise_center = True/False
                               samplewise_center=False,
                               #featurewise_std_normalization = True/False,
                               samplewise_std_normalization=False,
                               #zca_epsilon=True,
-                              zca_whitening=True,
+                              #zca_whitening=True,
                               rotation_range=5,
-                              width_shift_range=0.15,
+                              #<width_shift_range=0.15,
                               #float = ,
                               #int = ,
-                              shear_range=0.01,
+                              #shear_range=0.01,
                               zoom_range=0.25,
                               #channel_shift-range = 
                               fill_mode='nearest',
@@ -68,14 +76,14 @@ core_idg = ImageDataGenerator(#featurewise_center = True/False
                               horizontal_flip=True,
                               vertical_flip=True,
                               #rescale = 
-                              preprocessing_function=preprocess_input,
+                              preprocessing_function=prepro,
                               #data_format = 
                               #validation_split
                               height_shift_range=0.15
                               )
 
-#core_idg.fit(train_df)
-#core_idg.fit(valid_df)
+
+
 
 def flow_from_dataframe(img_data_gen, in_df, path_col, y_col, **dflow_args):
     base_dir = os.path.dirname(in_df[path_col].values[0])
@@ -100,6 +108,14 @@ valid_gen = flow_from_dataframe(core_idg, valid_df, path_col='path', y_col='bone
 test_X, test_Y = next(flow_from_dataframe(core_idg, valid_df, path_col='path', y_col='boneage_zscore', target_size=IMG_SIZE, color_mode='rgb', batch_size=256))  # one big batch
 
 t_x, t_y = next(train_gen)
+
+#show image (barleo01)
+
+
+for i in range(10):
+    plt.imshow(test_X[i,:,:,0], cmap='gray')
+    plt.show()
+
 in_lay = Input(t_x.shape[1:])
 base_pretrained_model = VGG16(input_shape=t_x.shape[1:], include_top=False, weights='imagenet')
 base_pretrained_model.trainable = False
