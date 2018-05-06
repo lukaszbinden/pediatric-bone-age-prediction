@@ -18,8 +18,13 @@ from keras.models import Model
 from keras.layers import BatchNormalization
 from keras.callbacks import ModelCheckpoint, LearningRateScheduler, EarlyStopping, ReduceLROnPlateau
 from keras.metrics import mean_absolute_error
+from datetime import datetime
+from transfer_learning_common import flow_from_dataframe, get_chest_dataframe
 
-base_bone_dir = '/var/tmp/studi5/boneage/datasets'
+tstart = datetime.now()
+print('start: ', tstart)
+
+base_bone_dir = '/var/tmp/studi5/boneage/datasets/boneage'
 age_df = pd.read_csv(os.path.join(base_bone_dir, 'boneage-training-dataset.csv'))  # read csv
 age_df['path'] = age_df['id'].map(lambda x: os.path.join(base_bone_dir, 'boneage-training-dataset',
                                                          '{}.png'.format(x)))  # add path to dictionary
@@ -56,23 +61,6 @@ core_idg = ImageDataGenerator(samplewise_center=False,
                               fill_mode='nearest',
                               zoom_range=0.25,
                               preprocessing_function=preprocess_input)
-
-
-def flow_from_dataframe(img_data_gen, in_df, path_col, y_col, **dflow_args):
-    base_dir = os.path.dirname(in_df[path_col].values[0])
-    print('## Ignore next message from keras, values are replaced anyways')
-    df_gen = img_data_gen.flow_from_directory(base_dir,
-                                              class_mode='sparse',
-                                              **dflow_args)
-    df_gen.filenames = in_df[path_col].values
-    df_gen.classes = np.stack(in_df[y_col].values)
-    df_gen.samples = in_df.shape[0]
-    df_gen.n = in_df.shape[0]
-    # df_gen.
-    df_gen._set_index_array()
-    df_gen.directory = base_dir  # since we have the full path
-    print('Reinserting dataframe: {} images'.format(in_df.shape[0]))
-    return df_gen
 
 
 train_gen = flow_from_dataframe(core_idg, train_df, path_col='path', y_col='boneage_zscore', target_size=IMG_SIZE,
@@ -125,8 +113,7 @@ def mae_months(in_gt, in_pred):
     return mean_absolute_error(boneage_div * in_gt, boneage_div * in_pred)
 
 
-bone_age_model.compile(optimizer='adam', loss='mse',
-                       metrics=[mae_months])
+bone_age_model.compile(optimizer='adam', loss='mse', metrics=[mae_months])
 
 bone_age_model.summary()
 
@@ -142,7 +129,33 @@ early = EarlyStopping(monitor="val_loss",
                       patience=5)  # probably needs to be more patient, but kaggle time is limited
 callbacks_list = [checkpoint, early, reduceLROnPlat]
 
+print('==================================================')
+print('======= Training Model on CHEST Dataset ==========')
+print('==================================================')
+class_str_col = 'Patient Age'
+chest_df = get_chest_dataframe('nih-chest-xrays/')
+train_df_chest, valid_df_chest = train_test_split(chest_df, test_size=0.2, random_state=2018)  # , stratify=chest_df['chest_category'])
+print('train_chest', train_df_chest.shape[0], 'validation_chest', valid_df_chest.shape[0])
+
+train_gen_chest = flow_from_dataframe(core_idg, train_df_chest, path_col='path', y_col=class_str_col, target_size=IMG_SIZE,
+                                      color_mode='rgb', batch_size=32)
+
+valid_gen_chest = flow_from_dataframe(core_idg, valid_df_chest, path_col='path', y_col=class_str_col, target_size=IMG_SIZE,
+                                      color_mode='rgb', batch_size=128)  # we can use much larger batches for evaluation
+
+bone_age_model.fit_generator(train_gen_chest,
+                             validation_data=valid_gen_chest,
+                             epochs=15,
+                             callbacks=callbacks_list)
+
+print('==================================================')
+print('======= Training Model on BONEAGE Dataset ========')
+print('==================================================')
+
 bone_age_model.fit_generator(train_gen,
                              validation_data=(test_X, test_Y),
                              epochs=15,
                              callbacks=callbacks_list)
+
+tend = datetime.now()
+print('elapsed time: %s' % str((tend-tstart)))
