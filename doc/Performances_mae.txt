@@ -1,0 +1,11 @@
+(epochs: 25, learnable layers: 5)
+[studi5@node03 baseline]$ grep dataset transfer_learning.py.o31168.1
+Chest dataset (fixed): val_mean_absolute_error:  201.22733164088612
+Chest dataset (finetuning): val_mean_absolute_error:  129.21526256432082
+Boneage dataset (final): val_mean_absolute_error:  252.53561624533782
+
+(epochs: 30, learnable layers: 25)
+[studi5@node03 baseline]$ grep dataset transfer_learning.py.o31169.1
+Chest dataset (fixed): val_mean_absolute_error:  174.52575251125396
+Chest dataset (finetuning): val_mean_absolute_error:  138.8972111122281
+Boneage dataset (final): val_mean_absolute_error:  219.71042682346823
