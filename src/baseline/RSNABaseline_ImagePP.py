@@ -26,7 +26,7 @@ from skimage.exposure import equalize_hist
 
 #/home/guy/jmcs-atml-bone-age-prediction/datasets
 #/var/tmp/studi5/boneage/datasets/boneage/
-base_bone_dir = '/home/guy/jmcs-atml-bone-age-prediction/datasets/'
+base_bone_dir = '/var/tmp/studi5/boneage/datasets/boneage/'
 age_df = pd.read_csv(os.path.join(base_bone_dir, 'boneage-training-dataset.csv'))  # read csv
 age_df['path'] = age_df['id'].map(lambda x: os.path.join(base_bone_dir, 'boneage-training-dataset','{}.png'.format(x)))  # add path to dictionary
 
@@ -113,7 +113,7 @@ test_X, test_Y = next(flow_from_dataframe(core_idg, valid_df, path_col='path', y
 t_x, t_y = next(train_gen)
 
 #show image (barleo01)
-
+'''
 for i in range(10):
     img = test_X[i,:,:,0]
     plt.imshow(img, cmap='gray')
@@ -176,6 +176,5 @@ callbacks_list = [checkpoint, early, reduceLROnPlat]
 
 history = bone_age_model.fit_generator(train_gen, validation_data=(test_X, test_Y), epochs=15, callbacks=callbacks_list)
 
-with open('/var/tmp/studi5/boneage/git/jmcs-atml-bone-age-prediction/TrainingHistory/history_zca_whitening', 'wb') as file_pi:
+with open('/var/tmp/studi5/boneage/git/jmcs-atml-bone-age-prediction/TrainingHistory/history_std_normalization', 'wb') as file_pi:
         pickle.dump(history.history, file_pi)
-'''
