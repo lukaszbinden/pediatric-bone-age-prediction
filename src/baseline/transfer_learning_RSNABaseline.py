@@ -133,7 +133,7 @@ print('==================================================')
 print('======= Training Model on CHEST Dataset ==========')
 print('==================================================')
 class_str_col = 'Patient Age'
-chest_df = get_chest_dataframe('nih-chest-xrays/')
+chest_df = get_chest_dataframe('nih-chest-xrays-full/')
 train_df_chest, valid_df_chest = train_test_split(chest_df, test_size=0.2, random_state=2018)  # , stratify=chest_df['chest_category'])
 print('train_chest', train_df_chest.shape[0], 'validation_chest', valid_df_chest.shape[0])
 
