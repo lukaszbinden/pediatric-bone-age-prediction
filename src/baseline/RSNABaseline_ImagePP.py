@@ -22,10 +22,11 @@ from keras.metrics import mean_absolute_error
 
 import pickle
 from skimage.exposure import rescale_intensity
+from skimage.exposure import equalize_hist
 
 #/home/guy/jmcs-atml-bone-age-prediction/datasets
 #/var/tmp/studi5/boneage/datasets/boneage/
-base_bone_dir = '/var/tmp/studi5/boneage/datasets/boneage/'
+base_bone_dir = '/home/guy/jmcs-atml-bone-age-prediction/datasets/'
 age_df = pd.read_csv(os.path.join(base_bone_dir, 'boneage-training-dataset.csv'))  # read csv
 age_df['path'] = age_df['id'].map(lambda x: os.path.join(base_bone_dir, 'boneage-training-dataset','{}.png'.format(x)))  # add path to dictionary
 
@@ -54,10 +55,8 @@ print('New Data Size:', train_df.shape[0], 'Old Size:', raw_train_df.shape[0])
 def prepro(x):
     #for i in range(x.shape[2]):
     img = x
-    img = img+ (100-np.mean(img))
-    #x[i] = rescale_intensity(x[i])  
-    #mean = np.mean(img)
-    #img = img + (100-mean)
+    #img = img+(100-np.mean(img))
+    #img = rescale_intensity(img)  
     return img
 
 
@@ -65,11 +64,11 @@ IMG_SIZE = (384, 384)  # slightly smaller than vgg16 normally expects
 core_idg = ImageDataGenerator(#featurewise_center = True/False
                               samplewise_center=False,
                               #featurewise_std_normalization = True/False,
-                              samplewise_std_normalization=False,
+                              samplewise_std_normalization=True,
                               #zca_epsilon=True,
                               #zca_whitening=True,
                               rotation_range=5,
-                              #<width_shift_range=0.15,
+                              width_shift_range=0.15,
                               #float = ,
                               #int = ,
                               #shear_range=0.01,
@@ -78,7 +77,7 @@ core_idg = ImageDataGenerator(#featurewise_center = True/False
                               fill_mode='nearest',
                               #cval =   
                               horizontal_flip=True,
-                              vertical_flip=True,
+                              vertical_flip=False,
                               #rescale = 
                               preprocessing_function=prepro,
                               #data_format = 
@@ -114,13 +113,15 @@ test_X, test_Y = next(flow_from_dataframe(core_idg, valid_df, path_col='path', y
 t_x, t_y = next(train_gen)
 
 #show image (barleo01)
-'''
+
 for i in range(10):
     img = test_X[i,:,:,0]
-    #plt.imshow(img, cmap='gray')
-    #plt.show()
+    plt.imshow(img, cmap='gray')
+    plt.show()
     #mean = np.mean(img)
     #img = img + (100-mean)
+    #hist = np.histogram(img.flatten(), bins=np.arange(0,254,5))
+    #print(np.amax(hist))
     plt.hist(img.flatten(), bins=np.arange(0,254,5))
     plt.show()
     
@@ -177,3 +178,4 @@ history = bone_age_model.fit_generator(train_gen, validation_data=(test_X, test_
 
 with open('/var/tmp/studi5/boneage/git/jmcs-atml-bone-age-prediction/TrainingHistory/history_zca_whitening', 'wb') as file_pi:
         pickle.dump(history.history, file_pi)
+'''
