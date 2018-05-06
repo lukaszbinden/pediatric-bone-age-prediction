@@ -25,7 +25,7 @@ from skimage.exposure import rescale_intensity
 
 #/home/guy/jmcs-atml-bone-age-prediction/datasets
 #/var/tmp/studi5/boneage/datasets/boneage/
-base_bone_dir = '/home/guy/jmcs-atml-bone-age-prediction/datasets'
+base_bone_dir = '/var/tmp/studi5/boneage/datasets/boneage/'
 age_df = pd.read_csv(os.path.join(base_bone_dir, 'boneage-training-dataset.csv'))  # read csv
 age_df['path'] = age_df['id'].map(lambda x: os.path.join(base_bone_dir, 'boneage-training-dataset','{}.png'.format(x)))  # add path to dictionary
 
@@ -52,9 +52,13 @@ print('New Data Size:', train_df.shape[0], 'Old Size:', raw_train_df.shape[0])
 # train_df[['boneage', 'male']].hist(figsize=(10, 5))
 
 def prepro(x):
-    for i in range(x.shape[2]):
-         x[i] = rescale_intensity(x[i])   
-    return x
+    #for i in range(x.shape[2]):
+    img = x
+    img = img+ (100-np.mean(img))
+    #x[i] = rescale_intensity(x[i])  
+    #mean = np.mean(img)
+    #img = img + (100-mean)
+    return img
 
 
 IMG_SIZE = (384, 384)  # slightly smaller than vgg16 normally expects
@@ -110,11 +114,17 @@ test_X, test_Y = next(flow_from_dataframe(core_idg, valid_df, path_col='path', y
 t_x, t_y = next(train_gen)
 
 #show image (barleo01)
-
-
+'''
 for i in range(10):
-    plt.imshow(test_X[i,:,:,0], cmap='gray')
+    img = test_X[i,:,:,0]
+    #plt.imshow(img, cmap='gray')
+    #plt.show()
+    #mean = np.mean(img)
+    #img = img + (100-mean)
+    plt.hist(img.flatten(), bins=np.arange(0,254,5))
     plt.show()
+    
+'''
 
 in_lay = Input(t_x.shape[1:])
 base_pretrained_model = VGG16(input_shape=t_x.shape[1:], include_top=False, weights='imagenet')
