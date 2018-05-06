@@ -102,6 +102,7 @@ print('==================================================')
 base_chest_dir = base_datasets_dir + 'nih-chest-xrays/'
 image_index_col = 'Image Index'
 class_str_col = 'Patient Age'
+gender_col = 'Patient Gender'
 
 chest_df = pd.read_csv(os.path.join(base_chest_dir, 'sample_labels.csv'), usecols=[image_index_col, class_str_col])
 chest_df[class_str_col] = [int(x[:-1]) * 12 for x in chest_df[class_str_col]]  # parse Year Patient Age to Month age
@@ -123,11 +124,15 @@ train_gen_chest = flow_from_dataframe(core_idg, train_df_chest, path_col='path',
 valid_gen_chest = flow_from_dataframe(val_idg, valid_df_chest, path_col='path', y_col=class_str_col, target_size=IMG_SIZE,
                                       color_mode='rgb', batch_size=BATCH_SIZE_VAL)  # we can use much larger batches for evaluation
 
+gender_input_chest = Input(chest_df[gender_col])
+
+
 print('==================================================')
 print('========== Reading RSNA Boneage Dataset ==========')
 print('==================================================')
 base_boneage_dir = base_datasets_dir + 'boneage/'
 class_str_col = 'boneage'
+gender_col = 'gender'
 
 boneage_df = pd.read_csv(os.path.join(base_boneage_dir, 'boneage-training-dataset.csv'))
 boneage_df['path'] = boneage_df['id'].map(lambda x: os.path.join(base_boneage_dir, 'boneage-training-dataset',
@@ -154,6 +159,10 @@ valid_gen_boneage = flow_from_dataframe(core_idg, valid_df_boneage, path_col='pa
 print('==================================================')
 print('================= Building Model =================')
 print('==================================================')
+
+gender_output = Dense(32)
+
+gender_model = Model(inputs=[gender_input_chest], outputs=gender_output)
 
 # t_x: ndarray of images
 # t_y: ndarray of labels (patient age)
