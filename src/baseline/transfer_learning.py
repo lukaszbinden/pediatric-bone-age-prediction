@@ -32,7 +32,7 @@ tstart = datetime.now()
 NUM_EPOCHS = 250
 LEARNING_RATE = 0.001
 BATCH_SIZE_TRAIN = 64
-BATCH_SIZE_VAL = 256
+BATCH_SIZE_VAL = 128
 base_dir = '/var/tmp/studi5/boneage/'
 base_datasets_dir = base_dir + '/datasets/'
 
@@ -108,7 +108,8 @@ print('==================================================')
 
 print('current time: %s' % str(datetime.now()))
 
-base_chest_dir = base_datasets_dir + 'nih-chest-xrays/'
+# train on full chest dataset now
+base_chest_dir = base_datasets_dir + 'nih-chest-xrays-full/'
 image_index_col = 'Image Index'
 class_str_col = 'Patient Age'
 
@@ -254,12 +255,8 @@ print('==================================================')
 
 print('current time: %s' % str(datetime.now()))
 
-<<<<<<< Updated upstream
-model.compile(optimizer=Adam(lr=LEARNING_RATE*0.1), loss='mse', metrics=["mae"])
-=======
 adam = Adam(lr=LEARNING_RATE * 0.1, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0)
 model.compile(optimizer=adam, loss='mse', metrics=["mae"])
->>>>>>> Stashed changes
 
 model.summary()
 
