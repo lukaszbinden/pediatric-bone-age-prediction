@@ -13,4 +13,9 @@
 
 #$ -v DISPLAY
 
+#$ -o transfer_learning.log
+
+#$ -m ea
+#$ -M joel.niklaus@students.unibe.ch
+
 python transfer_learning.py
