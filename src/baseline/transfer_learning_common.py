@@ -42,7 +42,7 @@ def get_chest_dataframe(dir_name):
     class_str_col = 'Patient Age'
 
     chest_df = pd.read_csv(os.path.join(base_chest_dir, 'sample_labels.csv'), usecols=[image_index_col, class_str_col])
-    chest_df[class_str_col] = [int(x[:-1]) * 12 for x in chest_df[class_str_col]]  # parse Year Patient Age to Month age
+    chest_df[class_str_col] = [int(x[:-1] if type(x) == str and x[-1] == 'Y' else x) * 12 for x in chest_df[class_str_col]]  # parse Year Patient Age to Month age
     chest_df['path'] = chest_df[image_index_col].map(
         lambda x: os.path.join(base_chest_dir, 'images', x))  # create path from id
     chest_df['exists'] = chest_df['path'].map(os.path.exists)
