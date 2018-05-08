@@ -33,6 +33,13 @@ Until 07 of May !!!
 * Lukas: Implement transfer learning
 * Joel: Implement transfer learning
 
+# Third Task Deadline
+Until 15 of May !!!
+* Léonard: Build model on top of model to predict accuracy of age model
+* Ya: Make model highlight joints ??? Ya
+* Lukas: Make experiments with transfer learning, incorporate gender model
+* Joel: Make experiments with transfer learning, incorporate gender model
+
 # Project Deadline
 15th of May !!!
 
