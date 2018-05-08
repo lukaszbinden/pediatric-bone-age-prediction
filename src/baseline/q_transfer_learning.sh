@@ -16,6 +16,6 @@
 #$ -o transfer_learning.log
 
 #$ -m ea
-#$ -M joel.niklaus@students.unibe.ch
+#$ -M joel.niklaus@students.unibe.ch, lukas.zbinden@unifr.ch
 
 python transfer_learning.py
