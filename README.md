@@ -52,6 +52,11 @@ Until 07 of May !!!
 * Build model on top of model to predict accuracy of age model
 * Try combining different architectures/approaches with meta learning (e.g. voting)
 
+# Experiments
+* Chest XRays validate against disease, patient age, gender respectively
+* Chest XRays take all samples vs. only age in boneage range
+* Experiment with different number of freezed layers
+
 # Links
 * MURA dataset: https://stanfordmlgroup.github.io/projects/mura/ -> asked for early access but did not get any response
 * Chest Xrays dataset on box (full set): https://nihcc.app.box.com/v/ChestXray-NIHCC
