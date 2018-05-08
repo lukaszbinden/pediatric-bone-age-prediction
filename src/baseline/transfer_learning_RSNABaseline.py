@@ -138,10 +138,10 @@ train_df_chest, valid_df_chest = train_test_split(chest_df, test_size=0.2, rando
 print('train_chest', train_df_chest.shape[0], 'validation_chest', valid_df_chest.shape[0])
 
 train_gen_chest = flow_from_dataframe(core_idg, train_df_chest, path_col='path', y_col=class_str_col, target_size=IMG_SIZE,
-                                      color_mode='rgb', batch_size=64)
+                                      color_mode='rgb', batch_size=16)
 
 valid_gen_chest = flow_from_dataframe(core_idg, valid_df_chest, path_col='path', y_col=class_str_col, target_size=IMG_SIZE,
-                                      color_mode='rgb', batch_size=128)  # we can use much larger batches for evaluation
+                                      color_mode='rgb', batch_size=16)  # we can use much larger batches for evaluation
 
 bone_age_model.fit_generator(train_gen_chest,
                              validation_data=valid_gen_chest,

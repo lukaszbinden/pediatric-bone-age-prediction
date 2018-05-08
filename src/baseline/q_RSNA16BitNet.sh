@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#$ -N RSNA16BitNet.py 
+#$ -N RSNA16BitNet.py
 #$ -S /bin/bash
 #$ -cwd
 #$ -j y
