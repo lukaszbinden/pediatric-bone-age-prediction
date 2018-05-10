@@ -5,7 +5,7 @@ import os
 base_dir = '/var/tmp/studi5/boneage/'
 base_datasets_dir = base_dir + '/datasets/'
 
-def flow_from_dataframe(img_data_gen, in_df, path_col, y_col, **dflow_args):
+def flow_from_dataframe(img_data_gen, in_df, path_col, y_col, gender_col, **dflow_args):
     """
     Creates a DirectoryIterator from in_df at path_col with image preprocessing defined by img_data_gen. The labels
     are specified by y_col.
@@ -14,6 +14,7 @@ def flow_from_dataframe(img_data_gen, in_df, path_col, y_col, **dflow_args):
     :param in_df: a DataFrame with images
     :param path_col: name of column in in_df for path
     :param y_col: name of column in in_df for y values/labels
+    :param gender_col: name of column in in_df for the gender
     :param dflow_args: additional arguments to flow_from_directory
     :return: df_gen (keras.preprocessing.image.DirectoryIterator)
     """
@@ -27,6 +28,8 @@ def flow_from_dataframe(img_data_gen, in_df, path_col, y_col, **dflow_args):
     # with shape (batch_size, *target_size, channels) and y is a numpy array of corresponding labels.
     df_gen.filenames = in_df[path_col].values
     df_gen.classes = np.stack(in_df[y_col].values)
+    if gender_col:
+        df_gen.genders = in_df[gender_col].values
     df_gen.samples = in_df.shape[0]
     df_gen.n = in_df.shape[0]
     df_gen._set_index_array()

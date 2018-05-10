@@ -6,7 +6,7 @@ from datetime import datetime
 from keras import Input
 from keras.applications import InceptionV3
 from keras.applications.inception_resnet_v2 import InceptionResNetV2, preprocess_input
-from keras.layers import Dense, Flatten, Dropout, AveragePooling2D
+from keras.layers import Dense, Flatten, Dropout, AveragePooling2D, concatenate
 from keras.preprocessing.image import ImageDataGenerator
 from sklearn.model_selection import train_test_split
 from keras.models import Model, Sequential
@@ -100,7 +100,7 @@ print('current time: %s' % str(datetime.now()))
 print(next(train_gen_boneage))
 
 i1 = Input(shape=(299, 299, 3), name='input_img')
-# i2 = Input(shape=(1,), name='input_gender')
+i2 = Input(shape=(1,), name='input_gender')
 base = InceptionV3(input_tensor=i1, input_shape=(299, 299, 3), include_top=False, weights=None)
 feature_img = base.get_layer(name='mixed10').output
 # feature_img = AveragePooling2D((2,2), name='ave_pool_fea')(feature_img)
@@ -108,9 +108,9 @@ feature_img = base.get_layer(name='mixed10').output
 # feature_img = GlobalAveragePooling2D()(feature_img)
 feature_img = AveragePooling2D((2, 2))(feature_img)
 feature_img = Flatten()(feature_img)
-# feature_gender = Dense(32, activation='relu')(i2)
-# feature = concatenate([feature_img, feature_gender], axis=1)
-feature = feature_img
+feature_gender = Dense(32, activation='relu')(i2)
+feature = concatenate([feature_img, feature_gender], axis=1)
+#feature = feature_img
 o = Dense(1000, activation='relu')(feature)
 o = Dense(1000, activation='relu')(o)
 o = Dense(1)(o)
