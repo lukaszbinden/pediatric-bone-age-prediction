@@ -20,14 +20,14 @@ tstart = datetime.now()
 # hyperparameters
 NUM_EPOCHS = 250
 LEARNING_RATE = 0.001
-BATCH_SIZE_TRAIN = 64
-BATCH_SIZE_VAL = 128
+BATCH_SIZE_TRAIN = 16
+BATCH_SIZE_VAL = 16
 base_dir = '/var/tmp/studi5/boneage/'
 base_datasets_dir = base_dir + '/datasets/'
 
 # default size of InceptionResNetV2
 # cf. https://stackoverflow.com/questions/43922308/what-input-image-size-is-correct-for-the-version-of-resnet-v2-in-tensorflow-slim
-IMG_SIZE = (500, 500)
+IMG_SIZE = (299, 299)
 
 print('==================================================')
 print('============ Preprocessing Image Data ============')
@@ -97,9 +97,11 @@ print('==================================================')
 
 print('current time: %s' % str(datetime.now()))
 
-i1 = Input(shape=(500, 500, 3), name='input_img')
+print(next(train_gen_boneage))
+
+i1 = Input(shape=(299, 299, 3), name='input_img')
 # i2 = Input(shape=(1,), name='input_gender')
-base = InceptionV3(input_tensor=i1, input_shape=(500, 500, 3), include_top=False, weights=None)
+base = InceptionV3(input_tensor=i1, input_shape=(299, 299, 3), include_top=False, weights=None)
 feature_img = base.get_layer(name='mixed10').output
 # feature_img = AveragePooling2D((2,2), name='ave_pool_fea')(feature_img)
 # feature_img = Flatten()(feature_img)
