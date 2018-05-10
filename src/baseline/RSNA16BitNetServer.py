@@ -68,6 +68,7 @@ print('current time: %s' % str(datetime.now()))
 
 base_boneage_dir = base_datasets_dir + 'boneage/'
 class_str_col = 'boneage'
+gender_str_col = 'gender'
 
 boneage_df = pd.read_csv(os.path.join(base_boneage_dir, 'boneage-training-dataset.csv'))
 boneage_df['path'] = boneage_df['id'].map(lambda x: os.path.join(base_boneage_dir, 'boneage-training-dataset',
@@ -81,12 +82,12 @@ train_df_boneage, valid_df_boneage = train_test_split(boneage_df, test_size=0.2,
                                                       random_state=2018)  # ,stratify=boneage_df['boneage_category'])
 print('train', train_df_boneage.shape[0], 'validation', valid_df_boneage.shape[0])
 
-train_gen_boneage = flow_from_dataframe(core_idg, train_df_boneage, path_col='path', y_col=class_str_col,
+train_gen_boneage = flow_from_dataframe(core_idg, train_df_boneage, path_col='path', y_col=class_str_col, gender_col = gender_str_col,
                                         target_size=IMG_SIZE,
                                         color_mode='rgb', batch_size=BATCH_SIZE_TRAIN)
 
 # used a fixed dataset for evaluating the algorithm
-valid_gen_boneage = flow_from_dataframe(core_idg, valid_df_boneage, path_col='path', y_col=class_str_col,
+valid_gen_boneage = flow_from_dataframe(core_idg, valid_df_boneage, path_col='path', y_col=class_str_col, gender_col = gender_str_col,
                                         target_size=IMG_SIZE,
                                         color_mode='rgb',
                                         batch_size=BATCH_SIZE_VAL)  # we can use much larger batches for evaluation
