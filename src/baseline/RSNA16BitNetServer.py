@@ -82,12 +82,14 @@ train_df_boneage, valid_df_boneage = train_test_split(boneage_df, test_size=0.2,
                                                       random_state=2018)  # ,stratify=boneage_df['boneage_category'])
 print('train', train_df_boneage.shape[0], 'validation', valid_df_boneage.shape[0])
 
-train_gen_boneage = flow_from_dataframe(core_idg, train_df_boneage, path_col='path', y_col=class_str_col, gender_col = gender_str_col,
+train_gen_boneage = flow_from_dataframe(core_idg, train_df_boneage, path_col='path', y_col=class_str_col,
+                                        gender_col=gender_str_col,
                                         target_size=IMG_SIZE,
                                         color_mode='rgb', batch_size=BATCH_SIZE_TRAIN)
 
 # used a fixed dataset for evaluating the algorithm
-valid_gen_boneage = flow_from_dataframe(core_idg, valid_df_boneage, path_col='path', y_col=class_str_col, gender_col = gender_str_col,
+valid_gen_boneage = flow_from_dataframe(core_idg, valid_df_boneage, path_col='path', y_col=class_str_col,
+                                        gender_col=gender_str_col,
                                         target_size=IMG_SIZE,
                                         color_mode='rgb',
                                         batch_size=BATCH_SIZE_VAL)  # we can use much larger batches for evaluation
@@ -111,7 +113,7 @@ feature_img = AveragePooling2D((2, 2))(feature_img)
 feature_img = Flatten()(feature_img)
 feature_gender = Dense(32, activation='relu')(i2)
 feature = concatenate([feature_img, feature_gender], axis=1)
-#feature = feature_img
+# feature = feature_img
 o = Dense(1000, activation='relu')(feature)
 o = Dense(1000, activation='relu')(o)
 o = Dense(1)(o)
@@ -138,7 +140,8 @@ early = EarlyStopping(monitor="val_loss", mode="min",
 reduceLROnPlat = ReduceLROnPlateau(monitor='val_loss', factor=0.8, patience=10, verbose=1,
                                    mode='auto', epsilon=0.0001, cooldown=5, min_lr=LEARNING_RATE * 0.1)
 
-history = model.fit_generator([train_gen_boneage, train_df_boneage[gender_str_col]], validation_data=valid_gen_boneage, epochs=NUM_EPOCHS,
+history = model.fit_generator([train_gen_boneage, train_df_boneage[gender_str_col]], validation_data=valid_gen_boneage,
+                              epochs=NUM_EPOCHS, steps_per_epoch=len(train_gen_boneage),
                               callbacks=[checkpoint, early, reduceLROnPlat])
 print('Boneage dataset (final): val_mean_absolute_error: ', history.history['val_mean_absolute_error'][-1])
 
