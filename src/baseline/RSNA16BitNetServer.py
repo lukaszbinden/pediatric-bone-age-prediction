@@ -61,36 +61,6 @@ print('==================================================')
 print('current time: %s' % str(datetime.now()))
 
 print('==================================================')
-print('======== Reading NIH Chest XRays Dataset =========')
-print('==================================================')
-
-print('current time: %s' % str(datetime.now()))
-
-# train on full chest dataset now
-base_chest_dir = base_datasets_dir + 'nih-chest-xrays-full/'
-image_index_col = 'Image Index'
-class_str_col = 'Patient Age'
-
-chest_df = get_chest_dataframe('nih-chest-xrays/')
-
-raw_train_df_chest, valid_df_chest = train_test_split(chest_df, test_size=0.2,
-                                                      random_state=2018)  # , stratify=chest_df['chest_category'])
-print('train_chest', raw_train_df_chest.shape[0], 'validation_chest', valid_df_chest.shape[0])
-
-# NO Balance the distribution in the training set AT THIS POINT
-train_df_chest = raw_train_df_chest
-
-train_gen_chest = flow_from_dataframe(core_idg, train_df_chest, path_col='path', y_col=class_str_col,
-                                      target_size=IMG_SIZE,
-                                      color_mode='rgb', batch_size=BATCH_SIZE_TRAIN)
-
-
-valid_gen_chest = flow_from_dataframe(val_idg, valid_df_chest, path_col='path', y_col=class_str_col,
-                                      target_size=IMG_SIZE,
-                                      color_mode='rgb',
-                                      batch_size=BATCH_SIZE_VAL)  # we can use much larger batches for evaluation
-
-print('==================================================')
 print('========== Reading RSNA Boneage Dataset ==========')
 print('==================================================')
 
