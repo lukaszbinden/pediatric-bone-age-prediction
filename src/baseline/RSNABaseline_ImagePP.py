@@ -26,7 +26,7 @@ from skimage.exposure import equalize_hist
 
 #/home/guy/jmcs-atml-bone-age-prediction/datasets
 #/var/tmp/studi5/boneage/datasets/boneage/
-base_bone_dir = '/var/tmp/studi5/boneage/datasets/boneage/'
+base_bone_dir = '/home/guy/jmcs-atml-bone-age-prediction/datasets/'
 age_df = pd.read_csv(os.path.join(base_bone_dir, 'boneage-training-dataset.csv'))  # read csv
 age_df['path'] = age_df['id'].map(lambda x: os.path.join(base_bone_dir, 'boneage-training-dataset','{}.png'.format(x)))  # add path to dictionary
 
@@ -52,22 +52,35 @@ train_df = raw_train_df.groupby(['boneage_category', 'male']).apply(lambda x: x.
 print('New Data Size:', train_df.shape[0], 'Old Size:', raw_train_df.shape[0])
 # train_df[['boneage', 'male']].hist(figsize=(10, 5))
 
+def plotimghist(img):
+    plt.imshow(img, cmap='gray')
+    plt.show()
+    plt.hist(img.flatten(), bins=np.arange(np.min(img),np.max(img),((np.max(img)-np.min(img))/100)))
+    plt.show()
+
 def prepro(x):
-    #for i in range(x.shape[2]):
-    img = x
-    #img = img+(100-np.mean(img))
-    #img = rescale_intensity(img)  
-    return img
+    for i in range(x.shape[2]):
+        img = x[:,:,2]
+        img = (img-(np.min(img)))/np.max(img)
+        #img = img+(0.5-np.mean(img))
+        #img = rescale_intensity(img)  
+        #img = equalize_hist(img)$
+        img = equalize_hist(img)
+        if i==0:
+            plotimghist(img)
+        x[:,:,i] = img
+    return x
+
 
 
 IMG_SIZE = (384, 384)  # slightly smaller than vgg16 normally expects
 core_idg = ImageDataGenerator(#featurewise_center = True/False
                               samplewise_center=False,
-                              #featurewise_std_normalization = True/False,
+                              featurewise_std_normalization = True,
                               samplewise_std_normalization=True,
                               #zca_epsilon=True,
                               #zca_whitening=True,
-                              rotation_range=5,
+                              rotation_range=20,
                               width_shift_range=0.15,
                               #float = ,
                               #int = ,
@@ -116,14 +129,12 @@ t_x, t_y = next(train_gen)
 '''
 for i in range(10):
     img = test_X[i,:,:,0]
-    plt.imshow(img, cmap='gray')
-    plt.show()
+    plotimghist(img)
     #mean = np.mean(img)
     #img = img + (100-mean)
     #hist = np.histogram(img.flatten(), bins=np.arange(0,254,5))
     #print(np.amax(hist))
-    plt.hist(img.flatten(), bins=np.arange(0,254,5))
-    plt.show()
+
     
 '''
 
