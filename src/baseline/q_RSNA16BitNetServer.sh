@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#$ -N RSNA16BitNet.py
+#$ -N RSNA16BitNetServer.py
 #$ -S /bin/bash
 #$ -cwd
 #$ -j y
@@ -13,10 +13,10 @@
 
 #$ -v DISPLAY
 
-#$ -o RSNA16BitNet.log
+#$ -o RSNA16BitNetServer.log
 
 #$ -m ea
 #$ -M joel.niklaus@students.unibe.ch, lukas.zbinden@unifr.ch
 
-python RSNA16BitNet.py
+python RSNA16BitNetServer.py
 
