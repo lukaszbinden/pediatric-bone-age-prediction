@@ -27,7 +27,7 @@ base_datasets_dir = base_dir + '/datasets/'
 
 # default size of InceptionResNetV2
 # cf. https://stackoverflow.com/questions/43922308/what-input-image-size-is-correct-for-the-version-of-resnet-v2-in-tensorflow-slim
-IMG_SIZE = (299, 299)
+IMG_SIZE = (500, 500)
 
 print('==================================================')
 print('============ Preprocessing Image Data ============')
@@ -97,9 +97,9 @@ print('==================================================')
 
 print('current time: %s' % str(datetime.now()))
 
-i1 = Input(shape=(500, 500, 1), name='input_img')
+i1 = Input(shape=(500, 500, 3), name='input_img')
 # i2 = Input(shape=(1,), name='input_gender')
-base = InceptionV3(input_tensor=i1, input_shape=(500, 500, 1), include_top=False, weights=None)
+base = InceptionV3(input_tensor=i1, input_shape=(500, 500, 3), include_top=False, weights=None)
 feature_img = base.get_layer(name='mixed10').output
 # feature_img = AveragePooling2D((2,2), name='ave_pool_fea')(feature_img)
 # feature_img = Flatten()(feature_img)
