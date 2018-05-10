@@ -129,6 +129,9 @@ weight_path = base_dir + "{}_weights.best.hdf5".format('bone_age')
 checkpoint = ModelCheckpoint(weight_path, monitor='val_loss', verbose=1,
                              save_best_only=True, mode='min', save_weights_only=True)
 
+early = EarlyStopping(monitor="val_loss", mode="min",
+                      patience=5)  # probably needs to be more patient, but kaggle time is limited
+
 reduceLROnPlat = ReduceLROnPlateau(monitor='val_loss', factor=0.8, patience=10, verbose=1,
                                    mode='auto', epsilon=0.0001, cooldown=5, min_lr=LEARNING_RATE * 0.1)
 
