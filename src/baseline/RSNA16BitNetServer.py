@@ -68,7 +68,7 @@ print('current time: %s' % str(datetime.now()))
 
 base_boneage_dir = base_datasets_dir + 'boneage/'
 class_str_col = 'boneage'
-gender_str_col = 'gender'
+gender_str_col = 'male'
 
 boneage_df = pd.read_csv(os.path.join(base_boneage_dir, 'boneage-training-dataset.csv'))
 boneage_df['path'] = boneage_df['id'].map(lambda x: os.path.join(base_boneage_dir, 'boneage-training-dataset',
@@ -115,7 +115,7 @@ feature = concatenate([feature_img, feature_gender], axis=1)
 o = Dense(1000, activation='relu')(feature)
 o = Dense(1000, activation='relu')(o)
 o = Dense(1)(o)
-model = Model(inputs=i1, outputs=o)
+model = Model(inputs=[i1, i2], outputs=o)
 optimizer = Adam(lr=1e-3)
 model.compile(loss='mean_absolute_error', optimizer=optimizer)
 
@@ -138,7 +138,7 @@ early = EarlyStopping(monitor="val_loss", mode="min",
 reduceLROnPlat = ReduceLROnPlateau(monitor='val_loss', factor=0.8, patience=10, verbose=1,
                                    mode='auto', epsilon=0.0001, cooldown=5, min_lr=LEARNING_RATE * 0.1)
 
-history = model.fit_generator(train_gen_boneage, validation_data=valid_gen_boneage, epochs=NUM_EPOCHS,
+history = model.fit_generator([train_gen_boneage, train_df_boneage[gender_str_col]], validation_data=valid_gen_boneage, epochs=NUM_EPOCHS,
                               callbacks=[checkpoint, early, reduceLROnPlat])
 print('Boneage dataset (final): val_mean_absolute_error: ', history.history['val_mean_absolute_error'][-1])
 
