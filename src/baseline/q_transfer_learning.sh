@@ -13,9 +13,9 @@
 
 #$ -v DISPLAY
 
-#$ -o transfer_learning.log
+#$ -o /var/tmp/studi5/boneage/git/jmcs-atml-bone-age-prediction/src/baseline/logs/transfer_learning.log 
 
 #$ -m ea
-#$ -M joel.niklaus@students.unibe.ch, lukas.zbinden@unifr.ch
+#$ -M joel.niklaus@students.unibe.ch,lukas.zbinden@unifr.ch
 
 python transfer_learning.py
