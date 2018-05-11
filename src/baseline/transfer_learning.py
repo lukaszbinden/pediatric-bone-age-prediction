@@ -24,7 +24,7 @@ from keras.models import Model, Sequential
 from keras.callbacks import ModelCheckpoint, EarlyStopping, ReduceLROnPlateau
 from keras.optimizers import SGD, Adam
 from keras.metrics import mean_absolute_error
-from transfer_learning_common import flow_from_dataframe, get_chest_dataframe
+from transfer_learning_common import flow_from_dataframe, get_chest_dataframe, get_boneage_dataframe
 
 tstart = datetime.now()
 print('transfer_learning() --> ' % str(tstart))
@@ -36,6 +36,7 @@ BATCH_SIZE_TRAIN = 64
 BATCH_SIZE_VAL = 128
 LOSS_FUNCTION_OPTIM = 'mae'
 NUM_TRAINABLE_LAYERS = 5
+CHEST_DATASET_DIR = 'nih-chest-xrays-full/'
 base_dir = '/var/tmp/studi5/boneage/'
 base_datasets_dir = base_dir + '/datasets/'
 
@@ -81,14 +82,14 @@ print('==================================================')
 print('current time: %s' % str(datetime.now()))
 
 # train on full chest dataset now
-base_chest_dir = base_datasets_dir + 'nih-chest-xrays-full/'
 image_index_col = 'Image Index'
 class_str_col = 'Patient Age'
 
-chest_df = get_chest_dataframe('nih-chest-xrays/')
+chest_df = get_chest_dataframe(CHEST_DATASET_DIR)
 
 raw_train_df_chest, valid_df_chest = train_test_split(chest_df, test_size=0.2,
                                                       random_state=2018)  # , stratify=chest_df['chest_category'])
+
 print('train_chest', raw_train_df_chest.shape[0], 'validation_chest', valid_df_chest.shape[0])
 
 # NO Balance the distribution in the training set AT THIS POINT
@@ -110,27 +111,38 @@ print('==================================================')
 
 print('current time: %s' % str(datetime.now()))
 
-base_boneage_dir = base_datasets_dir + 'boneage/'
-class_str_col = 'boneage'
+# base_boneage_dir = base_datasets_dir + 'boneage/'
+class_str_col_training = 'boneage'
+class_str_col_val = 'Bone Age (months)'
 
-boneage_df = pd.read_csv(os.path.join(base_boneage_dir, 'boneage-training-dataset.csv'))
-boneage_df['path'] = boneage_df['id'].map(lambda x: os.path.join(base_boneage_dir, 'boneage-training-dataset',
-                                                                 '{}.png'.format(x)))  # create path from id
-
-boneage_df['exists'] = boneage_df['path'].map(os.path.exists)
-print(boneage_df['exists'].sum(), 'images found of', boneage_df.shape[0], 'total')
+# boneage_df = pd.read_csv(os.path.join(base_boneage_dir, 'boneage-training-dataset.csv'))
+# boneage_df['path'] = boneage_df['id'].map(lambda x: os.path.join(base_boneage_dir, 'boneage-training-dataset',
+#                                                                 '{}.png'.format(x)))  # create path from id
+# boneage_df['exists'] = boneage_df['path'].map(os.path.exists)
+# print(boneage_df['exists'].sum(), 'images found of', boneage_df.shape[0], 'total')
 # boneage_df['boneage_category'] = pd.cut(boneage_df[class_str_col], 10)
 
-train_df_boneage, valid_df_boneage = train_test_split(boneage_df, test_size=0.2,
-                                                      random_state=2018)  # ,stratify=boneage_df['boneage_category'])
-print('train', train_df_boneage.shape[0], 'validation', valid_df_boneage.shape[0])
+# train_df_boneage, valid_df_boneage = train_test_split(boneage_df, test_size=0.2,
+#                                                       random_state=2018)  # ,stratify=boneage_df['boneage_category'])
 
-train_gen_boneage = flow_from_dataframe(core_idg, train_df_boneage, path_col='path', y_col=class_str_col,
+train_df_boneage = get_boneage_dataframe('boneage-training-dataset', 'boneage-training-dataset.csv', 'id')
+
+# boneage_df = pd.read_csv(os.path.join(base_boneage_dir, 'boneage-validation-dataset.csv'))
+# boneage_df['path'] = boneage_df['id'].map(lambda x: os.path.join(base_boneage_dir, 'boneage-validation-dataset',
+#                                                                  '{}.png'.format(x)))  # create path from id
+# boneage_df['exists'] = boneage_df['path'].map(os.path.exists)
+# print(boneage_df['exists'].sum(), 'images found of', boneage_df.shape[0], 'total')
+
+valid_df_boneage = get_boneage_dataframe('boneage-validation-dataset', 'boneage-validation-dataset.csv', 'Image ID')
+
+print('train set:', train_df_boneage.shape[0], 'validation set:', valid_df_boneage.shape[0])
+
+train_gen_boneage = flow_from_dataframe(core_idg, train_df_boneage, path_col='path', y_col=class_str_col_training,
                                         target_size=IMG_SIZE,
                                         color_mode='rgb', batch_size=BATCH_SIZE_TRAIN)
 
 # used a fixed dataset for evaluating the algorithm
-valid_gen_boneage = flow_from_dataframe(core_idg, valid_df_boneage, path_col='path', y_col=class_str_col,
+valid_gen_boneage = flow_from_dataframe(core_idg, valid_df_boneage, path_col='path', y_col=class_str_col_val,
                                         target_size=IMG_SIZE,
                                         color_mode='rgb',
                                         batch_size=BATCH_SIZE_VAL)  # we can use much larger batches for evaluation
@@ -240,6 +252,8 @@ print('train model on boneage <--')
 print('==================================================')
 print('================ Evaluating Model ================')
 print('==================================================')
+
+# TODO (however, the test set does not have the age provided!)
 
 tend = datetime.now()
 print('current time: %s' % str(datetime.now()))

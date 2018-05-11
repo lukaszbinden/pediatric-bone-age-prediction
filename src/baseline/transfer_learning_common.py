@@ -49,3 +49,15 @@ def get_chest_dataframe(dir_name):
     print(chest_df['exists'].sum(), 'images found of', chest_df.shape[0], 'total')
     # chest_df['chest_category'] = pd.cut(chest_df[class_str], 10)
     return chest_df
+
+
+def get_boneage_dataframe(dir_name, csv_name, img_col_name):
+    base_boneage_dir = base_datasets_dir + 'boneage/'
+    boneage_df = pd.read_csv(os.path.join(base_boneage_dir, csv_name))
+    boneage_df['path'] = boneage_df[img_col_name].map(lambda x: os.path.join(base_boneage_dir, dir_name,
+                                                                     '{}.png'.format(x)))  # create path from id
+    boneage_df['exists'] = boneage_df['path'].map(os.path.exists)
+    print(dir_name, boneage_df['exists'].sum(), 'images found of', boneage_df.shape[0], 'total')
+    # boneage_df['boneage_category'] = pd.cut(boneage_df[class_str_col], 10)
+
+    return boneage_df
