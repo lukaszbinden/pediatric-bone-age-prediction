@@ -67,20 +67,20 @@ def plotimghist(img):
     plt.show()
 
 def prepro(x):
-    for i in range(x.shape[2]):
-        img = x[:,:,2]
+    #for i in range(x.shape[2]):
+        #img = x[:,:,2]
         #plotimghist(img)
-        img = (img-(np.min(img)))/np.max(img)
+        #img = (img-(np.min(img)))/np.max(img)
         #img = img+(0.5-np.mean(img))
         #img = rescale_intensity(img)  
         #img = equalize_hist(img)$
-        img = equalize_adapthist(img)
+        #img = equalize_adapthist(img)
         #if i==0:
         #    plotimghist(img)
-        x[:,:,i] = img
+        #x[:,:,i] = img
     return x
 
-def endOfEpoch(epoch, logs):
+def on_epoch_end(epoch, logs):
     print(epoch)
     print(logs)
     #bone_age_model = model.evaluate(x_test, y_test, verbose=0)
@@ -196,7 +196,7 @@ reduceLROnPlat = ReduceLROnPlateau(monitor='val_loss', factor=0.8, patience=10, 
 early = EarlyStopping(monitor="val_loss", mode="min", patience=5)  # probably needs to be more patient, but kaggle time is limited
 callbacks_list = [checkpoint, early, reduceLROnPlat]
 
-LambdaCallback(on_epoch_end = endOfEpoch) # barleo01
+LambdaCallback(on_epoch_end = True) # barleo01
 
 
 history = bone_age_model.fit_generator(train_gen, validation_data=(test_X, test_Y), epochs=15, callbacks=callbacks_list)
