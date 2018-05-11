@@ -11,7 +11,6 @@ Inspiration: https://blog.keras.io/building-powerful-image-classification-models
 Be happy and hopefully win the competition ;)
 '''
 
-import numpy as np
 import pandas as pd
 import os
 from datetime import datetime
@@ -28,12 +27,15 @@ from keras.metrics import mean_absolute_error
 from transfer_learning_common import flow_from_dataframe, get_chest_dataframe
 
 tstart = datetime.now()
+print('transfer_learning() --> ' % str(tstart))
 
 # hyperparameters
 NUM_EPOCHS = 250
 LEARNING_RATE = 0.001
 BATCH_SIZE_TRAIN = 64
 BATCH_SIZE_VAL = 128
+LOSS_FUNCTION_OPTIM = 'mae'
+NUM_TRAINABLE_LAYERS = 5
 base_dir = '/var/tmp/studi5/boneage/'
 base_datasets_dir = base_dir + '/datasets/'
 
@@ -168,8 +170,7 @@ out_layer = classifier(features)
 
 model = Model(inputs=[in_layer], outputs=[out_layer])
 
-model.compile(optimizer='adam', loss='mse', metrics=['mae'])
-
+model.compile(optimizer='adam', loss=LOSS_FUNCTION_OPTIM, metrics=['mae'])
 model.summary()  # prints the network structure
 
 print('==================================================')
@@ -178,40 +179,40 @@ print('==================================================')
 
 print('current time: %s' % str(datetime.now()))
 
-weight_path = base_dir + "{}_weights.best.hdf5".format('chest_age')
-
-checkpoint = ModelCheckpoint(weight_path, monitor='val_loss', verbose=1, save_best_only=True, mode='min',
-                             save_weights_only=True)  # save the weights
+# weight_path = base_dir + "{}_weights.best.hdf5".format('chest_age')
+# checkpoint = ModelCheckpoint(weight_path, monitor='val_loss', verbose=1, save_best_only=True, mode='min',
+#                             save_weights_only=True)  # save the weights
 
 early = EarlyStopping(monitor="val_loss", mode="min",
-                      patience=5)  # probably needs to be more patient, but kaggle time is limited
+                      patience=10)
 
 reduceLROnPlat = ReduceLROnPlateau(monitor='val_loss', factor=0.8, patience=10, verbose=1, mode='auto', epsilon=0.0001,
                                    cooldown=5, min_lr=LEARNING_RATE)
 
+print('train model on chest (fixed) -->')
 history = model.fit_generator(train_gen_chest, validation_data=valid_gen_chest, epochs=NUM_EPOCHS,
-                              callbacks=[checkpoint, early, reduceLROnPlat])  # trains the model
+                              callbacks=[early, reduceLROnPlat])  # trains the model
 print('Chest dataset (fixed): val_mean_absolute_error: ', history.history['val_mean_absolute_error'][-1])
+print('train model on chest (fixed) <--')
 # ['val_loss', 'val_mean_absolute_error', 'loss', 'mean_absolute_error', 'lr'
 
 
-# make last couple of conv layers in resnet trainable -->
+# make last NUM_TRAINABLE_LAYERS of conv layers in resnet trainable -->
 conv_base_model.trainable = True
-for layer in conv_base_model.layers[0:len(conv_base_model.layers) - 5]:
+for layer in conv_base_model.layers[0:len(conv_base_model.layers) - NUM_TRAINABLE_LAYERS]:
     layer.trainable = False
-for layer in conv_base_model.layers[-5:]:
+for layer in conv_base_model.layers[-NUM_TRAINABLE_LAYERS:]:
     layer.trainable = True
-# make last couple of conv layers in resnet trainable <--
+# make last NUM_TRAINABLE_LAYERS of conv layers in resnet trainable <--
 
-model.compile(loss='mse', optimizer=SGD(lr=LEARNING_RATE * 0.1, momentum=0.9), metrics=['mae'])
-
+model.compile(optimizer=SGD(lr=LEARNING_RATE * 0.1, momentum=0.9), loss=LOSS_FUNCTION_OPTIM, metrics=['mae'])
 model.summary()  # prints the network structure
 
-print('re-train model -->')
+print('train model on chest (finetuning) -->')
 history = model.fit_generator(train_gen_chest, validation_data=valid_gen_chest, epochs=NUM_EPOCHS,
                               callbacks=[checkpoint, early, reduceLROnPlat])  # trains the model
 print('Chest dataset (finetuning): val_mean_absolute_error: ', history.history['val_mean_absolute_error'][-1])
-print('re-train model <--')
+print('train model on chest (finetuning) <--')
 
 print('==================================================')
 print('======= Training Model on Boneage Dataset ========')
@@ -219,22 +220,22 @@ print('==================================================')
 
 print('current time: %s' % str(datetime.now()))
 
-adam = Adam(lr=LEARNING_RATE * 0.1, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0)
-model.compile(optimizer=adam, loss='mse', metrics=["mae"])
-
+adam = Adam(lr=LEARNING_RATE, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0)
+model.compile(optimizer=adam, loss=LOSS_FUNCTION_OPTIM, metrics=["mae"])
 model.summary()
 
-weight_path = base_dir + "{}_weights.best.hdf5".format('bone_age')
-
-checkpoint = ModelCheckpoint(weight_path, monitor='val_loss', verbose=1,
-                             save_best_only=True, mode='min', save_weights_only=True)
+# weight_path = base_dir + "{}_weights.best.hdf5".format('bone_age')
+# checkpoint = ModelCheckpoint(weight_path, monitor='val_loss', verbose=1,
+#                             save_best_only=True, mode='min', save_weights_only=True)
 
 reduceLROnPlat = ReduceLROnPlateau(monitor='val_loss', factor=0.8, patience=10, verbose=1,
                                    mode='auto', epsilon=0.0001, cooldown=5, min_lr=LEARNING_RATE * 0.1)
 
+print('train model on boneage -->')
 history = model.fit_generator(train_gen_boneage, validation_data=valid_gen_boneage, epochs=NUM_EPOCHS,
-                              callbacks=[checkpoint, early, reduceLROnPlat])
+                              callbacks=[early, reduceLROnPlat])
 print('Boneage dataset (final): val_mean_absolute_error: ', history.history['val_mean_absolute_error'][-1])
+print('train model on boneage <--')
 
 print('==================================================')
 print('================ Evaluating Model ================')
@@ -243,3 +244,4 @@ print('==================================================')
 tend = datetime.now()
 print('current time: %s' % str(datetime.now()))
 print('elapsed time: %s' % str((tend - tstart)))
+print('transfer_learning() <-- ' % str(datetime.now()))
