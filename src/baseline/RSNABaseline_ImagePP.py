@@ -17,19 +17,23 @@ from keras.layers import GlobalAveragePooling2D, Dense, Dropout, Flatten, Input,
     Lambda
 from keras.models import Model
 from keras.layers import BatchNormalization
-from keras.callbacks import ModelCheckpoint, LearningRateScheduler, EarlyStopping, ReduceLROnPlateau
+from keras.callbacks import ModelCheckpoint, LearningRateScheduler, EarlyStopping, ReduceLROnPlateau, LambdaCallback
 from keras.metrics import mean_absolute_error
 
 import pickle
 from skimage.exposure import rescale_intensity
 from skimage.exposure import equalize_hist, equalize_adapthist
 
-from keras import callbacks
 import ImageSelector as imgsel
+
+server = False
 
 #/home/guy/jmcs-atml-bone-age-prediction/datasets
 #/var/tmp/studi5/boneage/datasets/boneage/
-base_bone_dir = '/home/guy/jmcs-atml-bone-age-prediction/datasets/'
+if server == False:
+    base_bone_dir = '/home/guy/jmcs-atml-bone-age-prediction/datasets/'
+else:
+    base_bone_dir = '/var/tmp/studi5/boneage/datasets/boneage/'
 age_df = pd.read_csv(os.path.join(base_bone_dir, 'boneage-training-dataset.csv'))  # read csv
 age_df['path'] = age_df['id'].map(lambda x: os.path.join(base_bone_dir, 'boneage-training-dataset','{}.png'.format(x)))  # add path to dictionary
 
@@ -192,7 +196,7 @@ reduceLROnPlat = ReduceLROnPlateau(monitor='val_loss', factor=0.8, patience=10, 
 early = EarlyStopping(monitor="val_loss", mode="min", patience=5)  # probably needs to be more patient, but kaggle time is limited
 callbacks_list = [checkpoint, early, reduceLROnPlat]
 
-callbacks.LambdaCallback(on_batch_end = endOfBatch) # barleo01
+LambdaCallback(on_batch_end = endOfBatch) # barleo01
 
 
 history = bone_age_model.fit_generator(train_gen, validation_data=(test_X, test_Y), epochs=15, callbacks=callbacks_list)
