@@ -34,6 +34,7 @@ if server == False:
     base_bone_dir = '/home/guy/jmcs-atml-bone-age-prediction/datasets/'
 else:
     base_bone_dir = '/var/tmp/studi5/boneage/datasets/boneage/'
+    
 age_df = pd.read_csv(os.path.join(base_bone_dir, 'boneage-training-dataset.csv'))  # read csv
 age_df['path'] = age_df['id'].map(lambda x: os.path.join(base_bone_dir, 'boneage-training-dataset','{}.png'.format(x)))  # add path to dictionary
 
@@ -79,10 +80,9 @@ def prepro(x):
         x[:,:,i] = img
     return x
 
-def endOfBatch():
-    print("--------------Trou de bit------------------")
-    print("--------------Trou de bit------------------")
-    print("--------------Trou de bit------------------")
+def endOfEpoch(epoch, logs):
+    print(epoch)
+    print(logs)
     #bone_age_model = model.evaluate(x_test, y_test, verbose=0)
     #imgsel_model = imgsel.ImageSelectorModel()
 
@@ -196,7 +196,7 @@ reduceLROnPlat = ReduceLROnPlateau(monitor='val_loss', factor=0.8, patience=10, 
 early = EarlyStopping(monitor="val_loss", mode="min", patience=5)  # probably needs to be more patient, but kaggle time is limited
 callbacks_list = [checkpoint, early, reduceLROnPlat]
 
-LambdaCallback(on_batch_end = endOfBatch) # barleo01
+LambdaCallback(on_epoch_end = endOfEpoch) # barleo01
 
 
 history = bone_age_model.fit_generator(train_gen, validation_data=(test_X, test_Y), epochs=15, callbacks=callbacks_list)
