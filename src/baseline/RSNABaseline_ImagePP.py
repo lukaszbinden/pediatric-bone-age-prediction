@@ -22,7 +22,10 @@ from keras.metrics import mean_absolute_error
 
 import pickle
 from skimage.exposure import rescale_intensity
-from skimage.exposure import equalize_hist
+from skimage.exposure import equalize_hist, equalize_adapthist
+
+from keras import callbacks
+import ImageSelector as imgsel
 
 #/home/guy/jmcs-atml-bone-age-prediction/datasets
 #/var/tmp/studi5/boneage/datasets/boneage/
@@ -61,22 +64,28 @@ def plotimghist(img):
 def prepro(x):
     for i in range(x.shape[2]):
         img = x[:,:,2]
+        #plotimghist(img)
         img = (img-(np.min(img)))/np.max(img)
         #img = img+(0.5-np.mean(img))
         #img = rescale_intensity(img)  
         #img = equalize_hist(img)$
-        img = equalize_hist(img)
-        if i==0:
-            plotimghist(img)
+        img = equalize_adapthist(img)
+        #if i==0:
+        #    plotimghist(img)
         x[:,:,i] = img
     return x
 
-
+def endOfBatch():
+    print("--------------Trou de bit------------------")
+    print("--------------Trou de bit------------------")
+    print("--------------Trou de bit------------------")
+    #bone_age_model = model.evaluate(x_test, y_test, verbose=0)
+    #imgsel_model = imgsel.ImageSelectorModel()
 
 IMG_SIZE = (384, 384)  # slightly smaller than vgg16 normally expects
 core_idg = ImageDataGenerator(#featurewise_center = True/False
                               samplewise_center=False,
-                              featurewise_std_normalization = True,
+                              #featurewise_std_normalization = True,
                               samplewise_std_normalization=True,
                               #zca_epsilon=True,
                               #zca_whitening=True,
@@ -133,9 +142,7 @@ for i in range(10):
     #mean = np.mean(img)
     #img = img + (100-mean)
     #hist = np.histogram(img.flatten(), bins=np.arange(0,254,5))
-    #print(np.amax(hist))
-
-    
+    #print(np.amax(hist))   
 '''
 
 in_lay = Input(t_x.shape[1:])
@@ -148,8 +155,8 @@ bn_features = BatchNormalization()(pt_features)
 
 # here we do an attention mechanism to turn pixels in the GAP on and off
 
-attn_layer = Conv2D(64, kernel_size=(5, 5), padding='same', activation='relu')(bn_features)
-attn_layer = Conv2D(16, kernel_size=(3, 3), padding='same', activation='relu')(attn_layer)
+attn_layer = Conv2D(64, kernel_size=(1, 1), padding='same', activation='relu')(bn_features)
+attn_layer = Conv2D(16, kernel_size=(1, 1), padding='same', activation='relu')(attn_layer)
 attn_layer = LocallyConnected2D(1, kernel_size=(1, 1), padding='valid', activation='sigmoid')(attn_layer)
 # fan it out to all of the channels
 up_c2_w = np.ones((1, 1, 1, pt_depth))
@@ -184,6 +191,9 @@ reduceLROnPlat = ReduceLROnPlateau(monitor='val_loss', factor=0.8, patience=10, 
 
 early = EarlyStopping(monitor="val_loss", mode="min", patience=5)  # probably needs to be more patient, but kaggle time is limited
 callbacks_list = [checkpoint, early, reduceLROnPlat]
+
+callbacks.LambdaCallback(on_batch_end = endOfBatch) # barleo01
+
 
 history = bone_age_model.fit_generator(train_gen, validation_data=(test_X, test_Y), epochs=15, callbacks=callbacks_list)
 
