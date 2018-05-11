@@ -27,7 +27,7 @@ from keras.metrics import mean_absolute_error
 from transfer_learning_common import flow_from_dataframe, get_chest_dataframe, get_boneage_dataframe
 
 tstart = datetime.now()
-print('transfer_learning() --> ' % str(tstart))
+print('transfer_learning() --> %s' % str(tstart))
 
 # hyperparameters
 NUM_EPOCHS = 250
@@ -258,4 +258,4 @@ print('==================================================')
 tend = datetime.now()
 print('current time: %s' % str(datetime.now()))
 print('elapsed time: %s' % str((tend - tstart)))
-print('transfer_learning() <-- ' % str(datetime.now()))
+print('transfer_learning() <-- %s' % str(datetime.now()))
