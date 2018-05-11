@@ -26,7 +26,7 @@ from skimage.exposure import equalize_hist, equalize_adapthist
 
 import ImageSelector as imgsel
 
-server = False
+server = True
 
 #/home/guy/jmcs-atml-bone-age-prediction/datasets
 #/var/tmp/studi5/boneage/datasets/boneage/
@@ -67,6 +67,7 @@ def plotimghist(img):
     plt.show()
 
 def prepro(x):
+  
     #for i in range(x.shape[2]):
         #img = x[:,:,2]
         #plotimghist(img)
@@ -80,9 +81,11 @@ def prepro(x):
         #x[:,:,i] = img
     return x
 
-def on_epoch_end(epoch, logs):
-    print(epoch)
-    print(logs)
+def on_epoch_end(self):
+    #model saved/var/tmp/studi5/boneage/datasets/boneage/bone_age_weights.best.hdf5
+    print(self.epoch)
+    print(self.logs)
+    print("Guy Carlier")
     #bone_age_model = model.evaluate(x_test, y_test, verbose=0)
     #imgsel_model = imgsel.ImageSelectorModel()
 
