@@ -26,7 +26,7 @@ from skimage.exposure import equalize_hist, equalize_adapthist
 
 import ImageSelector as imgsel
 
-server = True
+server = False
 
 #/home/guy/jmcs-atml-bone-age-prediction/datasets
 #/var/tmp/studi5/boneage/datasets/boneage/
@@ -81,11 +81,11 @@ def prepro(x):
         #x[:,:,i] = img
     return x
 
-def on_epoch_end(self):
+def on_epoch_end_(epoch, logs):
     #model saved/var/tmp/studi5/boneage/datasets/boneage/bone_age_weights.best.hdf5
-    print(self.epoch)
-    print(self.logs)
-    print("Guy Carlier")
+    print(epoch)
+    print(logs)
+    print("End of Epoch")
     #bone_age_model = model.evaluate(x_test, y_test, verbose=0)
     #imgsel_model = imgsel.ImageSelectorModel()
 
@@ -196,10 +196,10 @@ checkpoint = ModelCheckpoint(weight_path, monitor='val_loss', verbose=1, save_be
 
 reduceLROnPlat = ReduceLROnPlateau(monitor='val_loss', factor=0.8, patience=10, verbose=1, mode='auto', epsilon=0.0001, cooldown=5, min_lr=0.0001)
 
-early = EarlyStopping(monitor="val_loss", mode="min", patience=5)  # probably needs to be more patient, but kaggle time is limited
-callbacks_list = [checkpoint, early, reduceLROnPlat]
+lambdacall = LambdaCallback(on_epoch_end = on_epoch_end_) # barleo01
 
-LambdaCallback(on_epoch_end = True) # barleo01
+early = EarlyStopping(monitor="val_loss", mode="min", patience=5)  # probably needs to be more patient, but kaggle time is limited
+callbacks_list = [checkpoint, early, reduceLROnPlat, lambdacall]
 
 
 history = bone_age_model.fit_generator(train_gen, validation_data=(test_X, test_Y), epochs=15, callbacks=callbacks_list)
