@@ -77,6 +77,7 @@ boneage_df['path'] = boneage_df['id'].map(lambda x: os.path.join(base_boneage_di
 boneage_df['exists'] = boneage_df['path'].map(os.path.exists)
 print(boneage_df['exists'].sum(), 'images found of', boneage_df.shape[0], 'total')
 # boneage_df['boneage_category'] = pd.cut(boneage_df[class_str_col], 10)
+boneage_df['male'].map(lambda x: 1 if x else 0) # map boolean values to 1 and 0
 
 train_df_boneage, valid_df_boneage = train_test_split(boneage_df, test_size=0.2,
                                                       random_state=2018)  # ,stratify=boneage_df['boneage_category'])
@@ -93,8 +94,8 @@ valid_gen_boneage = flow_from_dataframe(core_idg, valid_df_boneage, path_col='pa
                                         batch_size=BATCH_SIZE_VAL)  # we can use much larger batches for evaluation
 
 
-print(train_gen_boneage[gender_str_col])
-print(type(train_gen_boneage[gender_str_col][0]))
+print(train_df_boneage[gender_str_col])
+print(type(train_df_boneage[gender_str_col][0]))
 
 print('==================================================')
 print('================= Building Model =================')
