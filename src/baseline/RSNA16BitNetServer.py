@@ -105,8 +105,6 @@ print('==================================================')
 
 print('current time: %s' % str(datetime.now()))
 
-print(next(train_gen_boneage))
-
 i1 = Input(shape=(299, 299, 3), name='input_img')
 i2 = Input(shape=(1,), name='input_gender')
 base = InceptionV3(input_tensor=i1, input_shape=(299, 299, 3), include_top=False, weights=None)
@@ -150,10 +148,12 @@ def combined_generators(image_generator, gender, batch_size):
         nextImage= next(image_generator)
         yield [nextImage[0], next(batch(gender, batch_size))], nextImage[1]
 
+
 def batch(iterable, n=1):
     l = len(iterable)
     for ndx in range(0, l, n):
         yield iterable[ndx:min(ndx + n, l)]
+
 
 train_gen_wrapper = combined_generators(train_gen_boneage, train_df_boneage[gender_str_col], BATCH_SIZE_TRAIN)
 val_gen_wrapper = combined_generators(valid_gen_boneage, valid_df_boneage[gender_str_col], BATCH_SIZE_VAL)
