@@ -148,6 +148,7 @@ val_gen_wrapper = combined_generators(valid_gen_boneage, iter(valid_df_boneage[g
 
 history = model.fit_generator(train_gen_wrapper, validation_data=val_gen_wrapper,
                               epochs=NUM_EPOCHS, steps_per_epoch=len(train_gen_boneage),
+                              validation_steps=len(valid_gen_boneage),
                               callbacks=[checkpoint, early, reduceLROnPlat])
 print('Boneage dataset (final): val_mean_absolute_error: ', history.history['val_mean_absolute_error'][-1])
 
