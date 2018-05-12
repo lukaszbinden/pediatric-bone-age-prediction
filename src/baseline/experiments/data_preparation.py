@@ -1,3 +1,5 @@
+from itertools import cycle
+
 import pandas as pd
 import os
 import numpy as np
@@ -47,14 +49,29 @@ def get_gen(train_idg, val_idg, img_size, batch_size_train, batch_size_val, data
                                     color_mode='rgb', batch_size=batch_size_train)
 
     val_gen = flow_from_dataframe(val_idg, val_df, path_col='path', y_col=class_str_col,
-                                    target_size=img_size,
-                                    color_mode='rgb',
-                                    batch_size=batch_size_val)  # we can use much larger batches for evaluation
+                                  target_size=img_size,
+                                  color_mode='rgb',
+                                  batch_size=batch_size_val)  # we can use much larger batches for evaluation
 
     train_gen = combined_generators(train_gen, train_df[gender_str_col], batch_size_train)
     val_gen = combined_generators(val_gen, val_df[gender_str_col], batch_size_val)
 
     return train_gen, val_gen
+
+
+def combined_generators(image_generator, gender, batch_size):
+    gender_generator = cycle(batch(gender, batch_size))
+    while True:
+        nextImage = next(image_generator)
+        nextGender = next(gender_generator)
+        assert len(nextImage[0]) == len(nextGender)
+        yield [nextImage[0], nextGender], nextImage[1]
+
+
+def batch(iterable, n=1):
+    l = len(iterable)
+    for ndx in range(0, l, n):
+        yield iterable[ndx:min(ndx + n, l)]
 
 
 def flow_from_dataframe(img_data_gen, in_df, path_col, y_col, **dflow_args):
@@ -86,18 +103,6 @@ def flow_from_dataframe(img_data_gen, in_df, path_col, y_col, **dflow_args):
     print('Reinserting dataframe: {} images'.format(in_df.shape[0]))
     print('flow_from_dataframe() <--')
     return df_gen
-
-
-def combined_generators(image_generator, gender, batch_size):
-    while True:
-        nextImage = next(image_generator)
-        yield [nextImage[0], next(batch(gender, batch_size))], nextImage[1]
-
-
-def batch(iterable, n=1):
-    l = len(iterable)
-    for ndx in range(0, l, n):
-        yield iterable[ndx:min(ndx + n, l)]
 
 
 def get_chest_dataframe():

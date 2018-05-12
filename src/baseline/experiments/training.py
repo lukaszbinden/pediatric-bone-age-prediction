@@ -31,17 +31,17 @@ def train(train_gen, val_gen, model, optimizer=Adam(), loss='mean_absolute_error
     model.compile(optimizer=optimizer, loss=loss)
     model.summary()  # prints the network structure
 
-    early = EarlyStopping(monitor="val_loss", mode="min",
+    earlyStopping = EarlyStopping(monitor="val_loss", mode="min",
                           patience=10)
 
-    reduceLROnPlat = ReduceLROnPlateau(monitor='val_loss', factor=0.8, patience=10, verbose=1, mode='auto',
+    reduceLROnPlateau = ReduceLROnPlateau(monitor='val_loss', factor=0.8, patience=10, verbose=1, mode='auto',
                                        epsilon=0.0001,
                                        cooldown=5, min_lr=lr)
 
     history = model.fit_generator(train_gen, validation_data=val_gen, epochs=num_epochs,
-                                  steps_per_epoch=len(train_gen),
-                                  validation_steps=len(val_gen),
-                                  callbacks=[early, reduceLROnPlat])  # trains the model
+                                  #steps_per_epoch=len(train_gen),
+                                  #validation_steps=len(val_gen),
+                                  callbacks=[earlyStopping, reduceLROnPlateau])  # trains the model
 
     tend = datetime.now()
     print('training finished: %s' % str((tend - tstart)))

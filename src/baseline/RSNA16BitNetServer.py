@@ -3,7 +3,9 @@ from itertools import islice, chain
 import numpy as np
 import pandas as pd
 import os
+import sys
 from datetime import datetime
+from itertools import cycle
 
 from keras import Input
 from keras.applications import InceptionV3
@@ -96,8 +98,7 @@ valid_gen_boneage = flow_from_dataframe(core_idg, valid_df_boneage, path_col='pa
                                         batch_size=BATCH_SIZE_VAL)  # we can use much larger batches for evaluation
 
 
-print(train_df_boneage[gender_str_col])
-print(type(train_df_boneage[gender_str_col][0]))
+# print(len(train_df_boneage[gender_str_col]))
 
 print('==================================================')
 print('================= Building Model =================')
@@ -143,10 +144,17 @@ early = EarlyStopping(monitor="val_loss", mode="min",
 reduceLROnPlat = ReduceLROnPlateau(monitor='val_loss', factor=0.8, patience=10, verbose=1,
                                    mode='auto', epsilon=0.0001, cooldown=5, min_lr=LEARNING_RATE * 0.1)
 
-def combined_generators(image_generator, gender, batch_size):
-    while True:
-        nextImage= next(image_generator)
-        yield [nextImage[0], next(batch(gender, batch_size))], nextImage[1]
+
+def combined_generators(image_generator, gender_data, batch_size):
+    try:
+        gender_generator = cycle(batch(gender_data, batch_size))
+        while True:
+            nextImage = next(image_generator)
+            nextGender = next(gender_generator)
+            assert len(nextImage[0]) == len(nextGender)
+            yield [nextImage[0], nextGender], nextImage[1]
+    except Error:
+        print("Unexpected error:", sys.exc_info()[0])
 
 
 def batch(iterable, n=1):
