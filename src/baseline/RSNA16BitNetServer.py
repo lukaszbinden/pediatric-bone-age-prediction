@@ -1,3 +1,5 @@
+from itertools import islice, chain
+
 import numpy as np
 import pandas as pd
 import os
@@ -143,13 +145,18 @@ early = EarlyStopping(monitor="val_loss", mode="min",
 reduceLROnPlat = ReduceLROnPlateau(monitor='val_loss', factor=0.8, patience=10, verbose=1,
                                    mode='auto', epsilon=0.0001, cooldown=5, min_lr=LEARNING_RATE * 0.1)
 
-def combined_generators(image_generator, gender):
+def combined_generators(image_generator, gender, batch_size):
     while True:
         nextImage= next(image_generator)
-        yield [nextImage[0], next(gender)], nextImage[1]
+        yield [nextImage[0], next(batch(gender, batch_size))], nextImage[1]
 
-train_gen_wrapper = combined_generators(train_gen_boneage, iter(train_df_boneage[gender_str_col]))
-val_gen_wrapper = combined_generators(valid_gen_boneage, iter(valid_df_boneage[gender_str_col]))
+def batch(iterable, n=1):
+    l = len(iterable)
+    for ndx in range(0, l, n):
+        yield iterable[ndx:min(ndx + n, l)]
+
+train_gen_wrapper = combined_generators(train_gen_boneage, train_df_boneage[gender_str_col], BATCH_SIZE_TRAIN)
+val_gen_wrapper = combined_generators(valid_gen_boneage, valid_df_boneage[gender_str_col], BATCH_SIZE_VAL)
 
 history = model.fit_generator(train_gen_wrapper, validation_data=val_gen_wrapper,
                               epochs=NUM_EPOCHS, steps_per_epoch=len(train_gen_boneage),
