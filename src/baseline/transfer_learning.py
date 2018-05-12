@@ -222,7 +222,7 @@ model.summary()  # prints the network structure
 
 print('train model on chest (finetuning) -->')
 history = model.fit_generator(train_gen_chest, validation_data=valid_gen_chest, epochs=NUM_EPOCHS,
-                              callbacks=[checkpoint, early, reduceLROnPlat])  # trains the model
+                              callbacks=[early, reduceLROnPlat])  # trains the model
 print('Chest dataset (finetuning): val_mean_absolute_error: ', history.history['val_mean_absolute_error'][-1])
 print('train model on chest (finetuning) <--')
 
