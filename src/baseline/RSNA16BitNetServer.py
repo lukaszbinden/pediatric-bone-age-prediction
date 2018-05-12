@@ -92,6 +92,10 @@ valid_gen_boneage = flow_from_dataframe(core_idg, valid_df_boneage, path_col='pa
                                         color_mode='rgb',
                                         batch_size=BATCH_SIZE_VAL)  # we can use much larger batches for evaluation
 
+
+print(train_gen_boneage[gender_str_col])
+print(type(train_gen_boneage[gender_str_col][0]))
+
 print('==================================================')
 print('================= Building Model =================')
 print('==================================================')
