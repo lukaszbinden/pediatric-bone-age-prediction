@@ -39,6 +39,8 @@ def train(train_gen, val_gen, model, optimizer=Adam(), loss='mean_absolute_error
                                        cooldown=5, min_lr=lr)
 
     history = model.fit_generator(train_gen, validation_data=val_gen, epochs=num_epochs,
+                                  steps_per_epoch=len(train_gen),
+                                  validation_steps=len(val_gen),
                                   callbacks=[early, reduceLROnPlat])  # trains the model
 
     tend = datetime.now()

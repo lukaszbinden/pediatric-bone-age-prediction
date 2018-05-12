@@ -113,7 +113,7 @@ def get_chest_dataframe():
     chest_df['path'] = chest_df[image_index_col].map(
         lambda x: os.path.join(chest_dataset_dir, img_dir, x))  # create path from id
     chest_df['exists'] = chest_df['path'].map(os.path.exists)
-    print(img_dir, chest_df['exists'].sum(), 'images found of', chest_df.shape[0], 'total')
+    print('chest', chest_df['exists'].sum(), 'images found of', chest_df.shape[0], 'total')
     chest_df[gender_str_col_chest] = chest_df[gender_str_col_chest].map(
         lambda x: np.array([1]) if x == 'M' else np.array([0]))  # map 'M' and 'F' values to 1 and 0
 
@@ -129,7 +129,7 @@ def get_boneage_dataframe():
     boneage_df['path'] = boneage_df[image_index_col].map(
         lambda x: os.path.join(boneage_dataset_dir, img_dir, '{}.png'.format(x)))  # create path from id
     boneage_df['exists'] = boneage_df['path'].map(os.path.exists)
-    print(img_dir, boneage_df['exists'].sum(), 'images found of', boneage_df.shape[0], 'total')
+    print('boneage', boneage_df['exists'].sum(), 'images found of', boneage_df.shape[0], 'total')
     boneage_df[gender_str_col_boneage] = boneage_df[gender_str_col_boneage].map(
         lambda x: np.array([1]) if x else np.array([0]))  # map boolean values to 1 and 0
 
