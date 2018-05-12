@@ -16,7 +16,7 @@
 #$ -o RSNA16BitNetServer.log
 
 #$ -m ea
-#$ -M joel.niklaus@students.unibe.ch, lukas.zbinden@unifr.ch
+#$ -M joel.niklaus@students.unibe.ch,lukas.zbinden@unifr.ch
 
 python RSNA16BitNetServer.py
 
