@@ -13,7 +13,7 @@
 
 #$ -v DISPLAY
 
-#$ -o RSNA16BitNetServer.log
+#$ -o /var/tmp/studi5/boneage/git/jmcs-atml-bone-age-prediction/src/baseline/logs/RSNA16BitNetServer.log
 
 #$ -m ea
 #$ -M joel.niklaus@students.unibe.ch,lukas.zbinden@unifr.ch
