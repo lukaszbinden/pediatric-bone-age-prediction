@@ -1,7 +1,7 @@
 from data_preparation import get_gen
 from model import get_model
 from training import train
-from keras.optimizers import Adam
+from keras.optimizers import Adam, SGD
 from keras.preprocessing.image import ImageDataGenerator
 
 # Hyperparameters
@@ -44,9 +44,15 @@ def execute():
 
     model = get_model('winner', True, 'imagenet')
 
+    NUM_TRAINABLE_LAYERS = 50
+    OPTIMIZER = Adam(lr=1e-4)
+
     history = train(train_gen_chest, val_gen_chest, steps_per_epoch_chest, validation_steps_chest, model,
                     OPTIMIZER, LOSS, LEARNING_RATE, NUM_EPOCHS,
                     NUM_TRAINABLE_LAYERS)
+
+    NUM_TRAINABLE_LAYERS = 10
+    OPTIMIZER = SGD(lr=1e-5)
 
     history = train(train_gen_boneage, val_gen_boneage, steps_per_epoch_boneage, validation_steps_boneage, model,
                     OPTIMIZER, LOSS, LEARNING_RATE, NUM_EPOCHS,
