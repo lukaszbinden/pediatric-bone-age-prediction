@@ -69,7 +69,7 @@ def combined_generators(image_generator, gender, batch_size):
         nextImage = next(image_generator)
         nextGender = next(gender_generator)
         assert len(nextImage[0]) == len(nextGender)
-        yield [nextImage[0], nextGender], nextImage[1]
+        yield [nextGender, nextImage[0]], nextImage[1]
 
 
 def batch(iterable, n=1):

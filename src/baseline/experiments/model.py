@@ -95,7 +95,7 @@ def get_baseline(input_img, pretrained):
     # to account for missing values from the attention model
     gap = Lambda(lambda x: x[0] / x[1], name='RescaleGAP')([gap_features, gap_mask])
     gap_dr = Dropout(0.5)(gap)
-    dr_steps = Dropout(0.25)(Dense(1024, activation='elu')(gap_dr))
+    dr_steps = Dropout(0.25)(Dense(1024, activation='relu')(gap_dr))
     return Dense(1, activation='linear')(dr_steps)  # linear is what 16bit did
 
 
