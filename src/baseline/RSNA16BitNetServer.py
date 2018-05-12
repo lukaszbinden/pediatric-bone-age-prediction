@@ -77,7 +77,7 @@ boneage_df['path'] = boneage_df['id'].map(lambda x: os.path.join(base_boneage_di
 boneage_df['exists'] = boneage_df['path'].map(os.path.exists)
 print(boneage_df['exists'].sum(), 'images found of', boneage_df.shape[0], 'total')
 # boneage_df['boneage_category'] = pd.cut(boneage_df[class_str_col], 10)
-boneage_df[gender_str_col] = boneage_df[gender_str_col].map(lambda x: 1 if x else 0) # map boolean values to 1 and 0
+boneage_df[gender_str_col] = boneage_df[gender_str_col].map(lambda x: np.array([1]) if x else np.array([0])) # map boolean values to 1 and 0
 
 train_df_boneage, valid_df_boneage = train_test_split(boneage_df, test_size=0.2,
                                                       random_state=2018)  # ,stratify=boneage_df['boneage_category'])
