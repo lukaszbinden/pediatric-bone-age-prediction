@@ -123,7 +123,7 @@ o = Dense(1000, activation='relu')(o)
 o = Dense(1)(o)
 model = Model(inputs=[i1, i2], outputs=o)
 optimizer = Adam(lr=1e-3)
-model.compile(loss='mean_absolute_error', optimizer=optimizer)
+model.compile(loss='mean_absolute_error', optimizer=optimizer, metrics=['mae'])
 
 print('==================================================')
 print('======= Training Model on Boneage Dataset ========')
@@ -135,8 +135,8 @@ model.summary()
 
 weight_path = base_dir + "{}_weights.best.hdf5".format('bone_age')
 
-checkpoint = ModelCheckpoint(weight_path, monitor='val_loss', verbose=1,
-                             save_best_only=True, mode='min', save_weights_only=True)
+#checkpoint = ModelCheckpoint(weight_path, monitor='val_loss', verbose=1,
+#                             save_best_only=True, mode='min', save_weights_only=True)
 
 early = EarlyStopping(monitor="val_loss", mode="min",
                       patience=5)  # probably needs to be more patient, but kaggle time is limited
@@ -146,15 +146,12 @@ reduceLROnPlat = ReduceLROnPlateau(monitor='val_loss', factor=0.8, patience=10, 
 
 
 def combined_generators(image_generator, gender_data, batch_size):
-    try:
-        gender_generator = cycle(batch(gender_data, batch_size))
-        while True:
-            nextImage = next(image_generator)
-            nextGender = next(gender_generator)
-            assert len(nextImage[0]) == len(nextGender)
-            yield [nextImage[0], nextGender], nextImage[1]
-    except Error:
-        print("Unexpected error:", sys.exc_info()[0])
+    gender_generator = cycle(batch(gender_data, batch_size))
+    while True:
+        nextImage = next(image_generator)
+        nextGender = next(gender_generator)
+        assert len(nextImage[0]) == len(nextGender)
+        yield [nextImage[0], nextGender], nextImage[1]
 
 
 def batch(iterable, n=1):
@@ -169,7 +166,7 @@ val_gen_wrapper = combined_generators(valid_gen_boneage, valid_df_boneage[gender
 history = model.fit_generator(train_gen_wrapper, validation_data=val_gen_wrapper,
                               epochs=NUM_EPOCHS, steps_per_epoch=len(train_gen_boneage),
                               validation_steps=len(valid_gen_boneage),
-                              callbacks=[checkpoint, early, reduceLROnPlat])
+                              callbacks=[early, reduceLROnPlat])
 print('Boneage dataset (final): val_mean_absolute_error: ', history.history['val_mean_absolute_error'][-1])
 
 print('==================================================')
