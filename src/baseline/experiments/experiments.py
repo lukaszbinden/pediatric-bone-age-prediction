@@ -44,6 +44,10 @@ def execute():
 
     model = get_model('winner', True, 'imagenet')
 
+    history = train(train_gen_chest, val_gen_chest, steps_per_epoch_chest, validation_steps_chest, model,
+                    OPTIMIZER, LOSS, LEARNING_RATE, NUM_EPOCHS,
+                    NUM_TRAINABLE_LAYERS)
+
     history = train(train_gen_boneage, val_gen_boneage, steps_per_epoch_boneage, validation_steps_boneage, model,
                     OPTIMIZER, LOSS, LEARNING_RATE, NUM_EPOCHS,
                     NUM_TRAINABLE_LAYERS)
