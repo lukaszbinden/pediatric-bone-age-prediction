@@ -96,16 +96,6 @@ print('==================================================')
 print('================= Building Model =================')
 print('==================================================')
 
-
-class GeneratorWrapper(iter):
-    def __init__(self, generator, gender):
-        self.generator = generator
-        self.gender = gender
-
-    def __next__(self):
-        yield next(self.generator[0]), next(self.gender), next(self.generator[1])
-
-
 print('current time: %s' % str(datetime.now()))
 
 print(next(train_gen_boneage))
@@ -148,8 +138,13 @@ early = EarlyStopping(monitor="val_loss", mode="min",
 reduceLROnPlat = ReduceLROnPlateau(monitor='val_loss', factor=0.8, patience=10, verbose=1,
                                    mode='auto', epsilon=0.0001, cooldown=5, min_lr=LEARNING_RATE * 0.1)
 
-train_gen_wrapper = GeneratorWrapper(train_gen_boneage, iter(train_df_boneage[gender_str_col]))
-val_gen_wrapper = GeneratorWrapper(valid_gen_boneage, iter(train_df_boneage[gender_str_col]))
+def combined_generators(image_generator, gender):
+    while True:
+        nextImage= next(image_generator)
+        yield [nextImage[0], next(gender)], nextImage[1]
+
+train_gen_wrapper = combined_generators(train_gen_boneage, iter(train_df_boneage[gender_str_col]))
+val_gen_wrapper = combined_generators(valid_gen_boneage, iter(valid_df_boneage[gender_str_col]))
 
 history = model.fit_generator(train_gen_wrapper, validation_data=val_gen_wrapper,
                               epochs=NUM_EPOCHS, steps_per_epoch=len(train_gen_boneage),
