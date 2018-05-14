@@ -25,7 +25,7 @@ def get_gen(train_idg, val_idg, img_size, batch_size_train, batch_size_val, data
     :param img_size:
     :param batch_size_train:
     :param batch_size_val:
-    :param dataset: either 'boneage' or 'chest'
+    :param dataset: either 'boneage' or 'chest' or 'chest_boneage_range'
     :return:
     """
     if dataset == 'boneage':
@@ -33,7 +33,11 @@ def get_gen(train_idg, val_idg, img_size, batch_size_train, batch_size_val, data
         class_str_col = class_str_col_boneage
         gender_str_col = gender_str_col_boneage
     elif dataset == 'chest':
-        df = get_chest_dataframe()
+        df = get_chest_dataframe(False)
+        class_str_col = class_str_col_chest
+        gender_str_col = gender_str_col_chest
+    elif dataset == 'chest_boneage_range':
+        df = get_chest_dataframe(True)
         class_str_col = class_str_col_chest
         gender_str_col = gender_str_col_chest
     else:
@@ -60,7 +64,6 @@ def get_gen(train_idg, val_idg, img_size, batch_size_train, batch_size_val, data
     val_gen = combined_generators(val_gen, val_df[gender_str_col], batch_size_val)
 
     return train_gen, val_gen, steps_per_epoch, validation_steps
-
 
 
 def combined_generators(image_generator, gender, batch_size):
@@ -109,7 +112,7 @@ def flow_from_dataframe(img_data_gen, in_df, path_col, y_col, **dflow_args):
     return df_gen
 
 
-def get_chest_dataframe():
+def get_chest_dataframe(only_boneage_range):
     img_dir = 'images'
     csv_name = 'sample_labels.csv'
     image_index_col = 'Image Index'
@@ -119,12 +122,17 @@ def get_chest_dataframe():
                            usecols=[image_index_col, class_str_col_chest, gender_str_col_chest, disease_str_col])
     chest_df[class_str_col_chest] = [int(x[:-1] if type(x) == str and x[-1] == 'Y' else x) * 12 for x in
                                      chest_df[class_str_col_chest]]  # parse Year Patient Age to Month age
+
     chest_df['path'] = chest_df[image_index_col].map(
         lambda x: os.path.join(chest_dataset_dir, img_dir, x))  # create path from id
     chest_df['exists'] = chest_df['path'].map(os.path.exists)
     print('chest', chest_df['exists'].sum(), 'images found of', chest_df.shape[0], 'total')
     chest_df[gender_str_col_chest] = chest_df[gender_str_col_chest].map(
         lambda x: np.array([1]) if x == 'M' else np.array([0]))  # map 'M' and 'F' values to 1 and 0
+
+    if only_boneage_range:
+        chest_df = [x for x in chest_df if x[
+            class_str_col_chest] <= 12 * 20]  # delete all entries from set which are not in boneage dataset age range
 
     return chest_df
 
