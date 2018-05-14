@@ -67,7 +67,8 @@ def get_gen(train_idg, val_idg, img_size, batch_size_train, batch_size_val, data
     validation_steps = len(val_gen)
 
     train_gen = combined_generators(train_gen, train_df[gender_str_col],
-                                    train_df[disease_str_col] if disease_enabled else None, disease_enabled, batch_size_train)
+                                    train_df[disease_str_col] if disease_enabled else None, disease_enabled,
+                                    batch_size_train)
     val_gen = combined_generators(val_gen, val_df[gender_str_col],
                                   val_df[disease_str_col] if disease_enabled else None, disease_enabled, batch_size_val)
 
@@ -84,10 +85,10 @@ def combined_generators(image_generator, gender, disease, disease_enabled, batch
         if disease_enabled:
             nextDisease = next(disease_generator)
             assert len(nextImage[0]) == len(nextDisease)
-            yield [nextGender, nextImage[0]], [nextImage[1], nextDisease]
+            yield [nextImage[0], nextGender], [nextImage[1], nextDisease]
         else:
             assert len(nextImage[0]) == len(nextGender)
-            yield [nextGender, nextImage[0]], nextImage[1]
+            yield [nextImage[0], nextGender], nextImage[1]
 
 
 def batch(iterable, n=1):
