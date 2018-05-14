@@ -47,19 +47,19 @@ def get_gen(train_idg, val_idg, img_size, batch_size_train, batch_size_val, data
         print('Please specify valid dataset name!')
         return
 
-    y_cols = [class_str_col]
-    if disease_enabled and dataset != 'boneage':
-        y_cols.append(disease_str_col)
+    # y_cols = [class_str_col]
+    # if disease_enabled and dataset != 'boneage':
+    #    y_cols.append(disease_str_col)
 
     train_df, val_df = train_test_split(df, test_size=0.2, random_state=2018)
 
     print('train', train_df.shape[0], 'validation', val_df.shape[0])
 
-    train_gen = flow_from_dataframe(train_idg, train_df, path_col='path', y_cols=y_cols,
+    train_gen = flow_from_dataframe(train_idg, train_df, path_col='path', y_col=class_str_col,
                                     target_size=img_size,
                                     color_mode='rgb', batch_size=batch_size_train)
 
-    val_gen = flow_from_dataframe(val_idg, val_df, path_col='path', y_cols=y_cols,
+    val_gen = flow_from_dataframe(val_idg, val_df, path_col='path', y_col=class_str_col,
                                   target_size=img_size,
                                   color_mode='rgb',
                                   batch_size=batch_size_val)  # we can use much larger batches for evaluation
@@ -67,19 +67,21 @@ def get_gen(train_idg, val_idg, img_size, batch_size_train, batch_size_val, data
     steps_per_epoch = len(train_gen)
     validation_steps = len(val_gen)
 
-    train_gen = combined_generators(train_gen, train_df[gender_str_col], batch_size_train)
-    val_gen = combined_generators(val_gen, val_df[gender_str_col], batch_size_val)
+    train_gen = combined_generators(train_gen, train_df[gender_str_col], train_df[disease_str_col], batch_size_train)
+    val_gen = combined_generators(val_gen, val_df[gender_str_col], val_df[disease_str_col], batch_size_val)
 
     return train_gen, val_gen, steps_per_epoch, validation_steps
 
 
-def combined_generators(image_generator, gender, batch_size):
+def combined_generators(image_generator, gender, disease, batch_size):
     gender_generator = cycle(batch(gender, batch_size))
+    disease_generator = cycle(batch(disease, batch_size))
     while True:
         nextImage = next(image_generator)
         nextGender = next(gender_generator)
-        assert len(nextImage[0]) == len(nextGender)
-        yield [nextGender, nextImage[0]], nextImage[1]
+        nextDisease = next(disease_generator)
+        assert len(nextImage[0]) == len(nextGender == len(nextDisease))
+        yield [nextGender, nextImage[0]], [nextImage[1], nextDisease]
 
 
 def batch(iterable, n=1):
@@ -88,7 +90,7 @@ def batch(iterable, n=1):
         yield iterable[ndx:min(ndx + n, l)]
 
 
-def flow_from_dataframe(img_data_gen, in_df, path_col, y_cols, **dflow_args):
+def flow_from_dataframe(img_data_gen, in_df, path_col, y_col, **dflow_args):
     """
     Creates a DirectoryIterator from in_df at path_col with image preprocessing defined by img_data_gen. The labels
     are specified by y_col.
@@ -96,7 +98,7 @@ def flow_from_dataframe(img_data_gen, in_df, path_col, y_cols, **dflow_args):
     :param img_data_gen: an ImageDataGenerator
     :param in_df: a DataFrame with images
     :param path_col: name of column in in_df for path
-    :param y_cols: list of name of columns in in_df for y values/labels
+    :param y_col: name of column in in_df for y values/labels
     :param dflow_args: additional arguments to flow_from_directory
     :return: df_gen (keras.preprocessing.image.DirectoryIterator)
     """
@@ -109,7 +111,7 @@ def flow_from_dataframe(img_data_gen, in_df, path_col, y_cols, **dflow_args):
     # df_gen: A DirectoryIterator yielding tuples of (x, y) where x is a numpy array containing a batch of images
     # with shape (batch_size, *target_size, channels) and y is a numpy array of corresponding labels.
     df_gen.filenames = in_df[path_col].values
-    df_gen.classes = [np.stack(in_df[y_col].values) for y_col in y_cols]
+    df_gen.classes = np.stack(in_df[y_col].values)  # [np.stack(in_df[y_col].values) for y_col in y_col]
     df_gen.samples = in_df.shape[0]
     df_gen.n = in_df.shape[0]
     df_gen._set_index_array()
@@ -136,12 +138,8 @@ def get_chest_dataframe(only_boneage_range):
     chest_df[gender_str_col_chest] = chest_df[gender_str_col_chest].map(
         lambda x: np.array([1]) if x == 'M' else np.array([0]))  # map 'M' and 'F' values to 1 and 0
 
-    print(type(chest_df))
-    print(chest_df)
-
     if only_boneage_range:
         chest_df.drop(chest_df[chest_df[class_str_col_chest] < 12 * 20].index)
-        #chest_df = [x for x in chest_df if x[class_str_col_chest] <= 12 * 20]  # delete all entries from set which are not in boneage dataset age range
 
     return chest_df
 
