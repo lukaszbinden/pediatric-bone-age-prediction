@@ -80,12 +80,12 @@ def get_gen(train_idg, val_idg, img_size, batch_size_train, batch_size_val, data
 
 def combined_generators(image_generator, gender, disease, batch_size):
     gender_generator = cycle(batch(gender, batch_size))
-    if disease:
+    if disease != False:
         disease_generator = cycle(batch(disease, batch_size))
     while True:
         nextImage = next(image_generator)
         nextGender = next(gender_generator)
-        if disease:
+        if disease != False:
             nextDisease = next(disease_generator)
             assert len(nextImage[0]) == len(nextDisease)
             yield [nextGender, nextImage[0]], [nextImage[1], nextDisease]
