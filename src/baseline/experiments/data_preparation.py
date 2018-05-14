@@ -148,8 +148,8 @@ def get_chest_dataframe(only_boneage_range):
     chest_df[gender_str_col_chest] = chest_df[gender_str_col_chest].map(
         lambda x: np.array([1]) if x == 'M' else np.array([0]))  # map 'M' and 'F' values to 1 and 0
 
-    chest_df[disease_str_col] = np.array([[1 if x == disease else 0 for disease in diseases] for x in chest_df[
-        disease_str_col]])  # convert diseases string into sparse binary vector for classification
+    chest_df[disease_str_col] = [np.array([1 if x == disease else 0 for disease in diseases]) for x in chest_df[
+        disease_str_col]]  # convert diseases string into sparse binary vector for classification
 
     print(chest_df[disease_str_col])
 
