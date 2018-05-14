@@ -67,21 +67,28 @@ def get_gen(train_idg, val_idg, img_size, batch_size_train, batch_size_val, data
     steps_per_epoch = len(train_gen)
     validation_steps = len(val_gen)
 
-    train_gen = combined_generators(train_gen, train_df[gender_str_col], train_df[disease_str_col], batch_size_train)
-    val_gen = combined_generators(val_gen, val_df[gender_str_col], val_df[disease_str_col], batch_size_val)
-
+    train_gen = combined_generators(train_gen, train_df[gender_str_col],
+                                    train_df[disease_str_col] if disease_enabled else False, batch_size_train)
+    val_gen = combined_generators(val_gen, val_df[gender_str_col],
+                                  val_df[disease_str_col] if disease_enabled else False, batch_size_val)
+        
     return train_gen, val_gen, steps_per_epoch, validation_steps
 
 
 def combined_generators(image_generator, gender, disease, batch_size):
     gender_generator = cycle(batch(gender, batch_size))
-    disease_generator = cycle(batch(disease, batch_size))
+    if disease:
+        disease_generator = cycle(batch(disease, batch_size))
     while True:
         nextImage = next(image_generator)
         nextGender = next(gender_generator)
-        nextDisease = next(disease_generator)
-        assert len(nextImage[0]) == len(nextGender == len(nextDisease))
-        yield [nextGender, nextImage[0]], [nextImage[1], nextDisease]
+        if disease:
+            nextDisease = next(disease_generator)
+            assert len(nextImage[0]) == len(nextDisease)
+            yield [nextGender, nextImage[0]], [nextImage[1], nextDisease]
+        else:
+            assert len(nextImage[0]) == len(nextGender)
+            yield [nextGender, nextImage[0]], nextImage[1]
 
 
 def batch(iterable, n=1):
