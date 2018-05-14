@@ -5,26 +5,37 @@ from keras.layers import Flatten, Dense, concatenate, AveragePooling2D, BatchNor
 import numpy as np
 
 
-def get_model(model='baseline', gender_enabled=True, pretrained='imagenet'):
+def get_model(model='baseline', gender_enabled=True, disease_enabled = True, pretrained='imagenet'):
     """
 
     :param model: 'baseline', 'own' or 'winner
     :param gender_enabled: True or False
+    :param disease_enabled: True or False
     :param pretrained: 'imagenet' or None
     :return:
     """
     input_gender = Input(shape=(1,), name='input_gender')
     input_img = Input(shape=(299, 299, 3), name='input_img')
 
+    inputs = [input_img]
+
     conv_base = get_conv_base(input_img, model, pretrained)
     if gender_enabled:
         feature = concatenate([get_gender(input_gender), conv_base], axis=1)
+        inputs.append(input_gender)
     else:
         feature = conv_base
 
-    output = get_classifier(feature)
+    classifier = get_classifier(feature)
+    output_age = Dense(1, name='output_age')(classifier)
 
-    return Model(inputs=[input_gender, input_img], outputs=output)
+    outputs = [output_age]
+
+    if disease_enabled:
+        output_disease = Dense(14, name='output_disease')(classifier) # number of disease categories = 14
+        outputs.append(output_disease)
+
+    return Model(inputs=inputs, outputs=outputs)
 
 
 def get_conv_base(input_img, model, pretrained):
@@ -100,10 +111,9 @@ def get_baseline(input_img, pretrained):
 
 
 def get_classifier(feature):
-    output = Dense(1000, activation='relu')(feature)
-    output = Dense(1000, activation='relu')(output)
-    output = Dense(1)(output)
-    return output
+    classifier = Dense(1000, activation='relu')(feature)
+    classifier = Dense(1000, activation='relu')(classifier)
+    return classifier
 
 
 def get_gender(input_gender):

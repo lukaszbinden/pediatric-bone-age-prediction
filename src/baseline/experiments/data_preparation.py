@@ -17,15 +17,18 @@ class_str_col_chest = 'Patient Age'
 gender_str_col_boneage = 'male'
 gender_str_col_chest = 'Patient Gender'
 
+disease_str_col = 'Finding Labels'
 
-def get_gen(train_idg, val_idg, img_size, batch_size_train, batch_size_val, dataset='boneage'):
+
+def get_gen(train_idg, val_idg, img_size, batch_size_train, batch_size_val, dataset='boneage', disease_enabled=True):
     """
     :param train_idg:
     :param val_idg:
     :param img_size:
     :param batch_size_train:
     :param batch_size_val:
-    :param dataset: either 'boneage' or 'chest'
+    :param dataset: either 'boneage' or 'chest' or 'chest_boneage_range'
+    :param disease_enabled: True or False
     :return:
     """
     if dataset == 'boneage':
@@ -33,22 +36,30 @@ def get_gen(train_idg, val_idg, img_size, batch_size_train, batch_size_val, data
         class_str_col = class_str_col_boneage
         gender_str_col = gender_str_col_boneage
     elif dataset == 'chest':
-        df = get_chest_dataframe()
+        df = get_chest_dataframe(False)
+        class_str_col = class_str_col_chest
+        gender_str_col = gender_str_col_chest
+    elif dataset == 'chest_boneage_range':
+        df = get_chest_dataframe(True)
         class_str_col = class_str_col_chest
         gender_str_col = gender_str_col_chest
     else:
         print('Please specify valid dataset name!')
         return
 
+    y_cols = [class_str_col]
+    if disease_enabled and dataset != 'boneage':
+        y_cols.append(disease_str_col)
+
     train_df, val_df = train_test_split(df, test_size=0.2, random_state=2018)
 
     print('train', train_df.shape[0], 'validation', val_df.shape[0])
 
-    train_gen = flow_from_dataframe(train_idg, train_df, path_col='path', y_col=class_str_col,
+    train_gen = flow_from_dataframe(train_idg, train_df, path_col='path', y_cols=y_cols,
                                     target_size=img_size,
                                     color_mode='rgb', batch_size=batch_size_train)
 
-    val_gen = flow_from_dataframe(val_idg, val_df, path_col='path', y_col=class_str_col,
+    val_gen = flow_from_dataframe(val_idg, val_df, path_col='path', y_cols=y_cols,
                                   target_size=img_size,
                                   color_mode='rgb',
                                   batch_size=batch_size_val)  # we can use much larger batches for evaluation
@@ -60,7 +71,6 @@ def get_gen(train_idg, val_idg, img_size, batch_size_train, batch_size_val, data
     val_gen = combined_generators(val_gen, val_df[gender_str_col], batch_size_val)
 
     return train_gen, val_gen, steps_per_epoch, validation_steps
-
 
 
 def combined_generators(image_generator, gender, batch_size):
@@ -78,7 +88,7 @@ def batch(iterable, n=1):
         yield iterable[ndx:min(ndx + n, l)]
 
 
-def flow_from_dataframe(img_data_gen, in_df, path_col, y_col, **dflow_args):
+def flow_from_dataframe(img_data_gen, in_df, path_col, y_cols, **dflow_args):
     """
     Creates a DirectoryIterator from in_df at path_col with image preprocessing defined by img_data_gen. The labels
     are specified by y_col.
@@ -86,7 +96,7 @@ def flow_from_dataframe(img_data_gen, in_df, path_col, y_col, **dflow_args):
     :param img_data_gen: an ImageDataGenerator
     :param in_df: a DataFrame with images
     :param path_col: name of column in in_df for path
-    :param y_col: name of column in in_df for y values/labels
+    :param y_cols: list of name of columns in in_df for y values/labels
     :param dflow_args: additional arguments to flow_from_directory
     :return: df_gen (keras.preprocessing.image.DirectoryIterator)
     """
@@ -99,7 +109,7 @@ def flow_from_dataframe(img_data_gen, in_df, path_col, y_col, **dflow_args):
     # df_gen: A DirectoryIterator yielding tuples of (x, y) where x is a numpy array containing a batch of images
     # with shape (batch_size, *target_size, channels) and y is a numpy array of corresponding labels.
     df_gen.filenames = in_df[path_col].values
-    df_gen.classes = np.stack(in_df[y_col].values)
+    df_gen.classes = [np.stack(in_df[y_col].values) for y_col in y_cols]
     df_gen.samples = in_df.shape[0]
     df_gen.n = in_df.shape[0]
     df_gen._set_index_array()
@@ -109,22 +119,26 @@ def flow_from_dataframe(img_data_gen, in_df, path_col, y_col, **dflow_args):
     return df_gen
 
 
-def get_chest_dataframe():
+def get_chest_dataframe(only_boneage_range):
     img_dir = 'images'
     csv_name = 'sample_labels.csv'
     image_index_col = 'Image Index'
-    disease_str_col = 'Finding Labels'
 
     chest_df = pd.read_csv(os.path.join(chest_dataset_dir, csv_name),
                            usecols=[image_index_col, class_str_col_chest, gender_str_col_chest, disease_str_col])
     chest_df[class_str_col_chest] = [int(x[:-1] if type(x) == str and x[-1] == 'Y' else x) * 12 for x in
                                      chest_df[class_str_col_chest]]  # parse Year Patient Age to Month age
+
     chest_df['path'] = chest_df[image_index_col].map(
         lambda x: os.path.join(chest_dataset_dir, img_dir, x))  # create path from id
     chest_df['exists'] = chest_df['path'].map(os.path.exists)
     print('chest', chest_df['exists'].sum(), 'images found of', chest_df.shape[0], 'total')
     chest_df[gender_str_col_chest] = chest_df[gender_str_col_chest].map(
         lambda x: np.array([1]) if x == 'M' else np.array([0]))  # map 'M' and 'F' values to 1 and 0
+
+    if only_boneage_range:
+        chest_df = [x for x in chest_df if x[
+            class_str_col_chest] <= 12 * 20]  # delete all entries from set which are not in boneage dataset age range
 
     return chest_df
 
