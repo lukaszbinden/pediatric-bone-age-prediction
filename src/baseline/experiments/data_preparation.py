@@ -35,6 +35,9 @@ def get_gen(train_idg, val_idg, img_size, batch_size_train, batch_size_val, data
         df = get_boneage_dataframe()
         class_str_col = class_str_col_boneage
         gender_str_col = gender_str_col_boneage
+        if disease_enabled:
+            print('Please enable disease only in chest dataset!')
+            disease_enabled = False
     elif dataset == 'chest':
         df = get_chest_dataframe(False)
         class_str_col = class_str_col_chest
@@ -71,7 +74,7 @@ def get_gen(train_idg, val_idg, img_size, batch_size_train, batch_size_val, data
                                     train_df[disease_str_col] if disease_enabled else False, batch_size_train)
     val_gen = combined_generators(val_gen, val_df[gender_str_col],
                                   val_df[disease_str_col] if disease_enabled else False, batch_size_val)
-        
+
     return train_gen, val_gen, steps_per_epoch, validation_steps
 
 
