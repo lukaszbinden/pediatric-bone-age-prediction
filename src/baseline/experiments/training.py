@@ -29,7 +29,7 @@ def train(train_gen, val_gen, steps_per_epoch, validation_steps, model, optimize
     for layer in model.layers[-num_trainable_layers:]:
         layer.trainable = True
 
-    model.compile(optimizer=optimizer, loss=loss)
+    model.compile(optimizer=optimizer, loss=loss) # if two outputs are defined two losses and loss_weights could be defined
     model.summary()  # prints the network structure
 
     earlyStopping = EarlyStopping(monitor="val_loss", mode="min",
