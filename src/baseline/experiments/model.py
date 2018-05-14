@@ -5,7 +5,7 @@ from keras.layers import Flatten, Dense, concatenate, AveragePooling2D, BatchNor
 import numpy as np
 
 
-def get_model(model='baseline', gender_enabled=True, disease_enabled = True, pretrained='imagenet'):
+def get_model(model='baseline', gender_enabled=True, disease_enabled=True, pretrained='imagenet'):
     """
 
     :param model: 'baseline', 'own' or 'winner
@@ -32,7 +32,8 @@ def get_model(model='baseline', gender_enabled=True, disease_enabled = True, pre
     outputs = [output_age]
 
     if disease_enabled:
-        output_disease = Dense(14, name='output_disease')(classifier) # number of disease categories = 14
+        output_disease = Dense(14, name='output_disease')(
+            classifier)  # number of disease categories = 14 and additionally "No Finding" and "several diseases combined, separated with |"
         outputs.append(output_disease)
 
     return Model(inputs=inputs, outputs=outputs)
