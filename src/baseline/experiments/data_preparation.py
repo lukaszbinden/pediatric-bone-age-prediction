@@ -50,10 +50,6 @@ def get_gen(train_idg, val_idg, img_size, batch_size_train, batch_size_val, data
         print('Please specify valid dataset name!')
         return
 
-    # y_cols = [class_str_col]
-    # if disease_enabled and dataset != 'boneage':
-    #    y_cols.append(disease_str_col)
-
     train_df, val_df = train_test_split(df, test_size=0.2, random_state=2018)
 
     print('train', train_df.shape[0], 'validation', val_df.shape[0])
@@ -71,9 +67,9 @@ def get_gen(train_idg, val_idg, img_size, batch_size_train, batch_size_val, data
     validation_steps = len(val_gen)
 
     train_gen = combined_generators(train_gen, train_df[gender_str_col],
-                                    train_df[disease_str_col], disease_enabled, batch_size_train)
+                                    train_df[disease_str_col] if disease_enabled else None, disease_enabled, batch_size_train)
     val_gen = combined_generators(val_gen, val_df[gender_str_col],
-                                  val_df[disease_str_col], disease_enabled, batch_size_val)
+                                  val_df[disease_str_col] if disease_enabled else None, disease_enabled, batch_size_val)
 
     return train_gen, val_gen, steps_per_epoch, validation_steps
 
