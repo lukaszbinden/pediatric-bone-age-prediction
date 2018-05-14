@@ -21,7 +21,7 @@ def get_model(model='baseline', gender_enabled=True, disease_enabled = True, pre
 
     conv_base = get_conv_base(input_img, model, pretrained)
     if gender_enabled:
-        feature = concatenate([get_gender(input_gender), conv_base], axis=1)
+        feature = concatenate([conv_base, get_gender(input_gender)], axis=1)
         inputs.append(input_gender)
     else:
         feature = conv_base
