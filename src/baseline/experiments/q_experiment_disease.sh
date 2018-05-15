@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#$ -N RSNA16BitNetServer.py
+#$ -N experiment_disease.py
 #$ -S /bin/bash
 #$ -cwd
 #$ -j y
@@ -13,10 +13,9 @@
 
 #$ -v DISPLAY
 
-#$ -o /var/tmp/studi5/boneage/git/jmcs-atml-bone-age-prediction/src/baseline/logs/RSNA16BitNetServer.log
+#$ -o /var/tmp/studi5/boneage/git/jmcs-atml-bone-age-prediction/src/baseline/logs/experiment_disease.log
 
 #$ -m ea
 #$ -M joel.niklaus@students.unibe.ch,lukas.zbinden@unifr.ch
 
-python RSNA16BitNetServer.py
-
+python experiment_disease.py

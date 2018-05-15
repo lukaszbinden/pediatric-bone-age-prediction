@@ -165,8 +165,8 @@ def get_chest_dataframe(only_boneage_range):
     chest_df[disease_str_col] = [np.array([1 if x == disease else 0 for disease in diseases]) for x in chest_df[
         disease_str_col]]  # convert diseases string into sparse binary vector for classification
 
-    chest_df[disease_str_col] = chest_df.drop(chest_df[chest_df[disease_str_col] == np.array(
-        [0] * 14)].index)  # delete all rows with zero entries (no disease)
+    #chest_df[disease_str_col] = chest_df.drop(chest_df[chest_df[disease_str_col] == np.array(
+    #    [0] * 14)].index)  # delete all rows with zero entries (no disease)
 
     print(chest_df[disease_str_col])
 
