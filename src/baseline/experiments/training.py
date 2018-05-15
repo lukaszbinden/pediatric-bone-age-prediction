@@ -6,6 +6,7 @@ from keras.optimizers import Adam
 
 def train(train_gen, val_gen, steps_per_epoch, validation_steps, model, optimizer=Adam(),
           loss='mean_absolute_error', lr=0.0001, num_epochs=100,
+          finetuning=False,
           num_trainable_layers=20):
     """
     :param train_gen:
@@ -22,14 +23,15 @@ def train(train_gen, val_gen, steps_per_epoch, validation_steps, model, optimize
     tstart = datetime.now()
     print('training starting --> %s' % str(tstart))
 
-    # make last num_trainable_layers of conv layers in model trainable -->
-    model.trainable = True
-    for layer in model.layers[0:len(model.layers) - num_trainable_layers]:
-        layer.trainable = False
-    for layer in model.layers[-num_trainable_layers:]:
-        layer.trainable = True
+    if finetuning:
+        # make last num_trainable_layers of conv layers in model trainable -->
+        model.trainable = True
+        for layer in model.layers[0:len(model.layers) - num_trainable_layers]:
+            layer.trainable = False
+        for layer in model.layers[-num_trainable_layers:]:
+            layer.trainable = True
 
-    model.compile(optimizer=optimizer, loss=loss) # if two outputs are defined two losses and loss_weights could be defined
+    model.compile(optimizer=optimizer, loss=loss, metrics=['mae'])  # if two outputs are defined two losses and loss_weights could be defined
     model.summary()  # prints the network structure
 
     earlyStopping = EarlyStopping(monitor="val_loss", mode="min",

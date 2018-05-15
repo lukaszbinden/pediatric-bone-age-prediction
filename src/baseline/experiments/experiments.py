@@ -5,7 +5,7 @@ from keras.optimizers import Adam, SGD
 from keras.preprocessing.image import ImageDataGenerator
 
 # Hyperparameters
-NUM_EPOCHS = 250
+NUM_EPOCHS = 5
 LEARNING_RATE = 0.001
 BATCH_SIZE_TRAIN = 16
 BATCH_SIZE_VAL = 16
@@ -42,21 +42,23 @@ def execute():
                                                                                                     BATCH_SIZE_VAL,
                                                                                                     'boneage', False)
 
-    model = get_model('winner', True, 'imagenet')
+    model = get_model('winner', True, False, True, 'imagenet')
 
-    NUM_TRAINABLE_LAYERS = 50
-    OPTIMIZER = Adam(lr=1e-4)
+    NUM_TRAINABLE_LAYERS = 0
+    OPTIMIZER = Adam(lr=1e-3)
 
-    history = train(train_gen_chest, val_gen_chest, steps_per_epoch_chest, validation_steps_chest, model,
+    history = train(train_gen_chest, val_gen_chest, steps_per_epoch_chest,
+                    validation_steps_chest, model,
                     OPTIMIZER, LOSS, LEARNING_RATE, NUM_EPOCHS,
+                    False,
                     NUM_TRAINABLE_LAYERS)
 
-    NUM_TRAINABLE_LAYERS = 10
-    OPTIMIZER = SGD(lr=1e-5)
-
-    history = train(train_gen_boneage, val_gen_boneage, steps_per_epoch_boneage, validation_steps_boneage, model,
-                    OPTIMIZER, LOSS, LEARNING_RATE, NUM_EPOCHS,
-                    NUM_TRAINABLE_LAYERS)
+    # NUM_TRAINABLE_LAYERS = 10
+    # OPTIMIZER = SGD(lr=1e-5)
+    #
+    # history = train(train_gen_boneage, val_gen_boneage, steps_per_epoch_boneage, validation_steps_boneage, model,
+    #                 OPTIMIZER, LOSS, LEARNING_RATE, NUM_EPOCHS,
+    #                 NUM_TRAINABLE_LAYERS)
 
     print('Boneage dataset (final): val_mean_absolute_error: ', history.history['val_mean_absolute_error'][-1])
 
