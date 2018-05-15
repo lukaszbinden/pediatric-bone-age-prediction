@@ -5,7 +5,7 @@ from keras.layers import Flatten, Dense, concatenate, AveragePooling2D, BatchNor
 import numpy as np
 
 
-def get_model(model='baseline', gender_input_enabled, gender_output_enabled, disease_enabled, pretrained='imagenet'):
+def get_model(model, gender_input_enabled, gender_output_enabled, disease_enabled, pretrained='imagenet'):
     """
 
     :param model: 'baseline', 'own' or 'winner
