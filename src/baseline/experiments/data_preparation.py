@@ -31,7 +31,7 @@ def get_gen(train_idg, val_idg, img_size, batch_size_train, batch_size_val, data
     :param disease_enabled: True or False
     :return:
     """
-    assert gender_enabled or disease_enabled
+    assert age_enabled or disease_enabled
     do_train_val_split = True
     if dataset == 'boneage':
         train_df = get_boneage_dataframe('boneage-training-dataset', 'id')
