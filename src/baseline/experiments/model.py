@@ -5,36 +5,44 @@ from keras.layers import Flatten, Dense, concatenate, AveragePooling2D, BatchNor
 import numpy as np
 
 
-def get_model(model='baseline', gender_enabled=True, disease_enabled=True, pretrained='imagenet'):
+def get_model(model='baseline', gender_input_enabled, gender_output_enabled, disease_enabled, pretrained='imagenet'):
     """
 
     :param model: 'baseline', 'own' or 'winner
-    :param gender_enabled: True or False
+    :param gender_input_enabled: True or False
+    :param gender_output_enabled: True or False
     :param disease_enabled: True or False
     :param pretrained: 'imagenet' or None
     :return:
     """
+    assert gender_output_enabled or disease_enabled
+
     input_gender = Input(shape=(1,), name='input_gender')
     input_img = Input(shape=(299, 299, 3), name='input_img')
 
-    inputs = [input_img]
-
     conv_base = get_conv_base(input_img, model, pretrained)
-    if gender_enabled:
-        feature = concatenate([conv_base, get_gender(input_gender)], axis=1)
+
+    inputs = [input_img]
+    if gender_input_enabled:
         inputs.append(input_gender)
+        feature = concatenate([conv_base, get_gender(input_gender)], axis=1)
     else:
         feature = conv_base
 
-    classifier = get_classifier(feature)
-    output_age = Dense(1, name='output_age')(classifier)
+    classifier = get_classifier_base(feature)
 
-    outputs = [output_age]
+    outputs = []
+    if gender_output_enabled:
+        output_age = Dense(1, name='output_age')(classifier)
+        outputs = [output_age]
 
     if disease_enabled:
-        output_disease = Dense(14, name='output_disease')(
-            classifier)  # number of disease categories = 14 and additionally "No Finding" and "several diseases combined, separated with |"
+        # number of disease categories = 14 and additionally "No Finding"
+        # and "several diseases combined, separated with |"
+        output_disease = Dense(14, name='output_disease')(classifier)
         outputs.append(output_disease)
+
+    assert len(outputs) > 0
 
     return Model(inputs=inputs, outputs=outputs)
 
@@ -111,7 +119,7 @@ def get_baseline(input_img, pretrained):
     return Dense(1, activation='linear')(dr_steps)  # linear is what 16bit did
 
 
-def get_classifier(feature):
+def get_classifier_base(feature):
     classifier = Dense(1000, activation='relu')(feature)
     classifier = Dense(1000, activation='relu')(classifier)
     return classifier

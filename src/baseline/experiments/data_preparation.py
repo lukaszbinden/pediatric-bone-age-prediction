@@ -8,7 +8,7 @@ from sklearn.model_selection import train_test_split
 
 base_dir = '/var/tmp/studi5/boneage/'
 base_datasets_dir = base_dir + 'datasets/'
-chest_dataset_dir = base_datasets_dir + 'nih-chest-xrays-full/'
+chest_dataset_dir = base_datasets_dir + 'nih-chest-xrays/'  # 'nih-chest-xrays-full/'
 boneage_dataset_dir = base_datasets_dir + 'boneage/'
 
 class_str_col_boneage = 'boneage'
@@ -31,8 +31,11 @@ def get_gen(train_idg, val_idg, img_size, batch_size_train, batch_size_val, data
     :param disease_enabled: True or False
     :return:
     """
+    do_train_val_split = True
     if dataset == 'boneage':
-        df = get_boneage_dataframe()
+        train_df = get_boneage_dataframe('boneage-training-dataset', 'id')
+        val_df = get_boneage_dataframe('boneage-validation-dataset', 'Image ID')
+        do_train_val_split = False
         class_str_col = class_str_col_boneage
         gender_str_col = gender_str_col_boneage
         if disease_enabled:
@@ -50,7 +53,8 @@ def get_gen(train_idg, val_idg, img_size, batch_size_train, batch_size_val, data
         print('Please specify valid dataset name!')
         return
 
-    train_df, val_df = train_test_split(df, test_size=0.2, random_state=2018)
+    if do_train_val_split:
+        train_df, val_df = train_test_split(df, test_size=0.2, random_state=2018)
 
     print('train', train_df.shape[0], 'validation', val_df.shape[0])
 
@@ -162,10 +166,9 @@ def get_chest_dataframe(only_boneage_range):
     return chest_df
 
 
-def get_boneage_dataframe():
-    csv_name = 'boneage-training-dataset.csv'
-    img_dir = 'boneage-training-dataset'
-    image_index_col = 'id'
+def get_boneage_dataframe(dataset_name, image_index_col):
+    csv_name = dataset_name + '.csv'
+    img_dir = dataset_name
 
     boneage_df = pd.read_csv(os.path.join(boneage_dataset_dir, csv_name))
     boneage_df['path'] = boneage_df[image_index_col].map(
