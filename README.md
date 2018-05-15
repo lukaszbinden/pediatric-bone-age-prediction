@@ -60,9 +60,13 @@ Until 15 of May !!!
 * Try combining different architectures/approaches with meta learning (e.g. voting)
 
 # Experiments
-* Chest XRays validate against disease, patient age, gender respectively
+* Chest XRays validate against disease and patient age respectively
 * Chest XRays take all samples vs. only age in boneage range
 * Experiment with different number of freezed layers
+* Experiment difference if pretrained on imagenet or not
+* Does including gender improve the result?
+* Experiment with different hyperparameters
+* Regression vs. Classificaiton on months range between 0 and 12 * 100
 
 # Links
 * MURA dataset: https://stanfordmlgroup.github.io/projects/mura/ -> asked for early access but did not get any response
