@@ -20,7 +20,7 @@ gender_str_col_chest = 'Patient Gender'
 disease_str_col = 'Finding Labels'
 
 
-def get_gen(train_idg, val_idg, img_size, batch_size_train, batch_size_val, dataset='boneage', disease_enabled=True):
+def get_gen(train_idg, val_idg, img_size, batch_size_train, batch_size_val, dataset='boneage', gender_enabled=True, disease_enabled=True):
     """
     :param train_idg:
     :param val_idg:
@@ -31,6 +31,7 @@ def get_gen(train_idg, val_idg, img_size, batch_size_train, batch_size_val, data
     :param disease_enabled: True or False
     :return:
     """
+    assert gender_enabled or disease_enabled
     do_train_val_split = True
     if dataset == 'boneage':
         train_df = get_boneage_dataframe('boneage-training-dataset', 'id')
@@ -71,28 +72,38 @@ def get_gen(train_idg, val_idg, img_size, batch_size_train, batch_size_val, data
     validation_steps = len(val_gen)
 
     train_gen = combined_generators(train_gen, train_df[gender_str_col],
-                                    train_df[disease_str_col] if disease_enabled else None, disease_enabled,
+                                    train_df[disease_str_col] if disease_enabled else None,
+                                    gender_enabled,
+                                    disease_enabled,
                                     batch_size_train)
     val_gen = combined_generators(val_gen, val_df[gender_str_col],
-                                  val_df[disease_str_col] if disease_enabled else None, disease_enabled, batch_size_val)
+                                  val_df[disease_str_col] if disease_enabled else None,
+                                  gender_enabled,
+                                  disease_enabled, batch_size_val)
 
     return train_gen, val_gen, steps_per_epoch, validation_steps
 
 
-def combined_generators(image_generator, gender, disease, disease_enabled, batch_size):
-    gender_generator = cycle(batch(gender, batch_size))
+def combined_generators(image_generator, gender, disease, gender_enabled, disease_enabled, batch_size):
+    if gender_enabled:
+        gender_generator = cycle(batch(gender, batch_size))
     if disease_enabled:
         disease_generator = cycle(batch(disease, batch_size))
     while True:
         nextImage = next(image_generator)
         nextGender = next(gender_generator)
-        if disease_enabled:
+        if gender_enabled and disease_enabled:
             nextDisease = next(disease_generator)
             assert len(nextImage[0]) == len(nextDisease)
+            assert len(nextImage[0]) == len(nextGender)
             yield [nextImage[0], nextGender], [nextImage[1], nextDisease]
-        else:
+        elif gender_enabled:
             assert len(nextImage[0]) == len(nextGender)
             yield [nextImage[0], nextGender], nextImage[1]
+        elif disease_enabled:
+            nextDisease = next(disease_generator)
+            assert len(nextImage[0]) == len(nextDisease)
+            yield [nextImage[0], nextGender], nextDisease
 
 
 def batch(iterable, n=1):
