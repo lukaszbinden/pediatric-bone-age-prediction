@@ -39,7 +39,7 @@ def train(train_gen, val_gen, steps_per_epoch, validation_steps, model, optimize
 
     reduceLROnPlateau = ReduceLROnPlateau(monitor='val_loss', factor=0.8, patience=10, verbose=1, mode='auto',
                                           epsilon=0.0001,
-                                          cooldown=5, min_lr=lr)
+                                          cooldown=5, min_lr=lr * 0.1)
 
     history = model.fit_generator(train_gen, validation_data=val_gen, epochs=num_epochs, verbose=1,
                                   steps_per_epoch=steps_per_epoch,

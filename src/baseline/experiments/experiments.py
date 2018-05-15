@@ -35,12 +35,15 @@ def execute():
 
     train_gen_chest, val_gen_chest, steps_per_epoch_chest, validation_steps_chest = get_gen(train_idg, val_idg,
                                                                                             IMG_SIZE, BATCH_SIZE_TRAIN,
-                                                                                            BATCH_SIZE_VAL, 'chest_boneage_range', True)
-    train_gen_boneage, val_gen_boneage, steps_per_epoch_boneage, validation_steps_boneage = get_gen(train_idg, val_idg,
-                                                                                                    IMG_SIZE,
-                                                                                                    BATCH_SIZE_TRAIN,
-                                                                                                    BATCH_SIZE_VAL,
-                                                                                                    'boneage', False)
+                                                                                            BATCH_SIZE_VAL,
+                                                                                            'chest_boneage_range',
+                                                                                            False,
+                                                                                            True)
+    # train_gen_boneage, val_gen_boneage, steps_per_epoch_boneage, validation_steps_boneage = get_gen(train_idg, val_idg,
+    #                                                                                                 IMG_SIZE,
+    #                                                                                                 BATCH_SIZE_TRAIN,
+    #                                                                                                 BATCH_SIZE_VAL,
+    #                                                                                                 'boneage', False)
 
     model = get_model('winner', True, False, True, 'imagenet')
 
