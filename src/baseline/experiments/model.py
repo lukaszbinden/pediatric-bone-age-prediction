@@ -5,17 +5,17 @@ from keras.layers import Flatten, Dense, concatenate, AveragePooling2D, BatchNor
 import numpy as np
 
 
-def get_model(model, gender_input_enabled, gender_output_enabled, disease_enabled, pretrained='imagenet'):
+def get_model(model, gender_input_enabled, age_output_enabled, disease_enabled, pretrained='imagenet'):
     """
 
     :param model: 'baseline', 'own' or 'winner
     :param gender_input_enabled: True or False
-    :param gender_output_enabled: True or False
+    :param age_output_enabled: True or False
     :param disease_enabled: True or False
     :param pretrained: 'imagenet' or None
     :return:
     """
-    assert gender_output_enabled or disease_enabled
+    assert age_output_enabled or disease_enabled
 
     input_gender = Input(shape=(1,), name='input_gender')
     input_img = Input(shape=(299, 299, 3), name='input_img')
@@ -32,7 +32,7 @@ def get_model(model, gender_input_enabled, gender_output_enabled, disease_enable
     classifier = get_classifier_base(feature)
 
     outputs = []
-    if gender_output_enabled:
+    if age_output_enabled:
         output_age = Dense(1, name='output_age')(classifier)
         outputs = [output_age]
 

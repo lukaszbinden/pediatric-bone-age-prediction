@@ -64,7 +64,7 @@ Until 15 of May !!!
 * Chest XRays take all samples vs. only age in boneage range
 * Experiment with different number of freezed layers
 * Experiment difference if pretrained on imagenet or not
-* Does including gender improve the result?
+* Does including gender as input improve the result?
 * Experiment with different hyperparameters
 * Regression vs. Classificaiton on months range between 0 and 12 * 100
 
