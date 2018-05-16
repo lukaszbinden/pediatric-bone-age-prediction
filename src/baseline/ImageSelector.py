@@ -11,6 +11,7 @@ Gets to 99.25% test accuracy after 12 epochs
 (there is still a lot of margin for parameter tuning).
 16 seconds per epoch on a GRID K520 GPU.
 '''
+import matplotlib.pyplot as plt
 
 import keras
 from keras.preprocessing.image import ImageDataGenerator
@@ -29,6 +30,8 @@ import scipy
 import pickle
 
 # obj0, obj1, obj2 are created here...
+
+DEBUG = True
 
 batch_size = 128
 num_classes = 1
@@ -57,10 +60,10 @@ def Ygenerator(model, boneage_train, img_train , tolerance):
     
     #img_list = to_rgb1(im_train)
     img_train = convert_gray_to_rgb(img_train)
-    Y_pred = model.predict(img_train)
+    Y_pred = model.predict(img_train)[:,0]
     Y = []
     for i in range(len(Y_pred)):
-        if Y_pred[i][0] < boneage_train[i]*(1+tolerance) and Y_pred[i][0] > boneage_train[i]*(1-tolerance):
+        if Y_pred[i] < boneage_train[i]*(1+tolerance) and Y_pred[i] > boneage_train[i]*(1-tolerance):
             #good estimation
             Y.append(True)
         else:
@@ -79,7 +82,7 @@ def TrainPredictorModel(img_train, errorpred_train, img_val, errorpred_val):
     checkpoint = ModelCheckpoint(base_bone_dir+'weights-{epoch:02d}-{val_loss:.2f}.h5', monitor='val_loss', save_best_only=True, verbose=1, mode='min')
     reduceLROnPlat = ReduceLROnPlateau(monitor='val_loss', factor=0.8, patience=10, verbose=1, mode='auto', epsilon=0.0001, cooldown=5, min_lr=0.0001)
 
-    model_predictor.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+    model_predictor.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
     
     #imgsel.TrainImageSelector(model_predictor, NextSet_X, NextSet_Y, NextSet_X, NextSet_Y)
     datagen = ImageDataGenerator(#featurewise_center = True/False
@@ -108,9 +111,13 @@ def TrainPredictorModel(img_train, errorpred_train, img_val, errorpred_val):
     
     datagen.fit(img_train)
     
-    model_predictor.fit_generator(datagen.flow(img_train, errorpred_train, batch_size=16),steps_per_epoch = 600,epochs=3,callbacks=[logger, earlystopping, checkpoint, reduceLROnPlat],validation_data=(img_val, errorpred_val),verbose=1)
+    model_predictor.fit_generator(datagen.flow(img_train, errorpred_train, batch_size=16),
+                                  steps_per_epoch = 600,epochs=3,
+                                  callbacks=[logger, earlystopping, checkpoint, reduceLROnPlat],
+                                  validation_data=(img_val, errorpred_val),verbose=1)
     
     scores = model_predictor.evaluate(img_val, errorpred_val, verbose=1)
+    print(scores)
 
 def ExtractimageQuality(model_bone_age):
     # ------------------------------------------
@@ -129,7 +136,7 @@ def ExtractimageQuality(model_bone_age):
     img_val, boneage_val, gender_val= LoadData2Mem(val_list, img_size_bone_age_model)
     
     errorpred_train = Ygenerator(model_bone_age, boneage_train, img_train, tolerance)
-    errorpred_val = Ygenerator(model_bone_age,boneage_train, img_val, tolerance)
+    errorpred_val = Ygenerator(model_bone_age,boneage_val, img_val, tolerance)
 
     # Saving the objects:
     with open(path_var_store + 'objs.pkl', 'wb') as f:  # Python 3: open(..., 'wb')
@@ -209,13 +216,12 @@ def LoadData2Mem(data_list_use, img_size=500):
 
 #DEBUGGING
 # Getting back the objects:
+if DEBUG == True:
+    print("---------------------------------------")
+    print("----------------Debug------------------")
+    print("---------------------------------------")
 
-print("---------------------------------------")
-print("----------------Debug------------------")
-print("---------------------------------------")
-'''
-with open(path_var_store + 'objs.pkl', 'rb') as f:  # Python 3: open(..., 'rb')
-    img_train, errorpred_train, img_val, errorpred_val = pickle.load(f)
+    with open(path_var_store + 'objs.pkl', 'rb') as f:  # Python 3: open(..., 'rb')
+        img_train, errorpred_train, img_val, errorpred_val = pickle.load(f)
 
-TrainPredictorModel(img_train, errorpred_train, img_val, errorpred_val)
-'''
+    TrainPredictorModel(img_train, errorpred_train, img_val, errorpred_val)
