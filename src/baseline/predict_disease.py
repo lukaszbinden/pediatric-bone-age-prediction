@@ -37,7 +37,7 @@ IMG_SIZE = (299, 299)
 
 def get_chest_dataframe():
     img_dir = 'images'
-    csv_name = 'sample_labels.csv'
+    csv_name = 'sample_labels_sm.csv'
     image_index_col = 'Image Index'
 
     diseases = ["Atelectasis", "Cardiomegaly", "Effusion", "Infiltration", "Mass", "Nodule", "Pneumonia",
@@ -55,16 +55,15 @@ def get_chest_dataframe():
     chest_df[gender_str_col_chest] = chest_df[gender_str_col_chest].map(
         lambda x: np.array([1]) if x == 'M' else np.array([0]))  # map 'M' and 'F' values to 1 and 0
 
-    chest_df[disease_str_col] = [np.array([1 if x == disease else 0 for disease in diseases]) for x in chest_df[
+    #print(chest_df[disease_str_col])
+
+    chest_df[disease_str_col] = [np.array([1 if disease in x else 0 for disease in diseases]) for x in chest_df[
         disease_str_col]]  # convert diseases string into sparse binary vector for classification
 
     #chest_df[disease_str_col] = chest_df.drop(chest_df[chest_df[disease_str_col] == np.array(
     #    [0] * 14)].index)  # delete all rows with zero entries (no disease)
 
-    # print(chest_df[disease_str_col])
-
     return chest_df
-
 
 class_str_col_boneage = 'boneage'
 class_str_col_chest = 'Patient Age'
@@ -78,7 +77,7 @@ val_idg = ImageDataGenerator(width_shift_range=0.25, height_shift_range=0.25, ho
 
 
 df = get_chest_dataframe()
-class_str_col = class_str_col_chest
+class_str_col = disease_str_col
 train_df, val_df = train_test_split(df, test_size=0.2, random_state=2018)
 
 train_gen = flow_from_dataframe(core_idg, train_df, path_col='path', y_col=class_str_col,
@@ -93,18 +92,27 @@ val_gen = flow_from_dataframe(val_idg, val_df, path_col='path', y_col=class_str_
 
 i1 = Input(shape=(299, 299, 3), name='input_img')
 base = InceptionV3(input_tensor=i1, input_shape=(299, 299, 3), include_top=False, weights=None)
+
+num_trainable_layers = 5
+base.trainable = True
+for layer in base.layers[0:len(base.layers) - num_trainable_layers]:
+    layer.trainable = False
+for layer in base.layers[-num_trainable_layers:]:
+    layer.trainable = True
+
 feature_img = base.get_layer(name='mixed10').output
 feature_img = AveragePooling2D((2, 2))(feature_img)
 feature_img = Flatten()(feature_img)
 feature = feature_img
 o = Dense(1000, activation='relu')(feature)
 o = Dense(1000, activation='relu')(o)
-o = Dense(14, name='output_disease', activation='softmax')(o)
+o = Dense(14, name='output_disease', activation='sigmoid')(o)
 model = Model(inputs=i1, outputs=o)
 optimizer = Adam(lr=1e-3)
 # model.compile(loss='mean_absolute_error', optimizer=optimizer, metrics=['mae'])
-model.compile(optimizer='rmsprop',
-              loss='categorical_crossentropy',
+sgd = SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
+model.compile(optimizer=sgd,
+              loss='binary_crossentropy',
               metrics=['accuracy'])
 
 model.summary()  # prints the network structure
@@ -115,6 +123,7 @@ earlyStopping = EarlyStopping(monitor="val_loss", mode="min",
 reduceLROnPlateau = ReduceLROnPlateau(monitor='val_loss', factor=0.8, patience=10, verbose=1, mode='auto',
                                       epsilon=0.0001,
                                       cooldown=5, min_lr=LEARNING_RATE * 0.1)
+
 
 def combined_generators(image_generator, disease, batch_size):
     disease_generator = cycle(batch(disease, batch_size))
@@ -130,13 +139,14 @@ def batch(iterable, n=1):
         yield iterable[ndx:min(ndx + n, l)]
 
 
-train_gen_wrapper = combined_generators(train_gen, train_df[disease_str_col], 16)
-val_gen_wrapper = combined_generators(val_gen, val_df[disease_str_col], 16)
+#train_gen_wrapper = combined_generators(train_gen, train_df[disease_str_col], 8)
+#val_gen_wrapper = combined_generators(val_gen, val_df[disease_str_col], 8)
 
-history = model.fit_generator(train_gen_wrapper, validation_data=val_gen_wrapper,
+history = model.fit_generator(train_gen, validation_data=val_gen,
                               epochs=NUM_EPOCHS, verbose=1,
                               steps_per_epoch=len(train_gen),
                               validation_steps=len(val_gen),
                               callbacks=[earlyStopping, reduceLROnPlateau])  # trains the model
 
 
+print('result: ', history.history['val_acc'][-1])

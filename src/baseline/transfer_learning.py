@@ -30,7 +30,7 @@ tstart = datetime.now()
 print('transfer_learning() --> %s' % str(tstart))
 
 # hyperparameters
-NUM_EPOCHS = 250
+NUM_EPOCHS = 10
 LEARNING_RATE = 0.001
 BATCH_SIZE_TRAIN = 64
 BATCH_SIZE_VAL = 128
