@@ -17,7 +17,7 @@ import keras
 from keras.preprocessing.image import ImageDataGenerator
 from keras.datasets import mnist
 from keras.models import Sequential
-from keras.layers import Dense, Dropout, Flatten
+from keras.layers import Dense, Dropout, Flatten, Activation
 from keras.layers import Conv2D, MaxPooling2D
 from keras.callbacks import ModelCheckpoint, LearningRateScheduler, CSVLogger, EarlyStopping, ReduceLROnPlateau, LambdaCallback
 from keras import backend as K
@@ -29,19 +29,34 @@ import scipy
 
 import pickle
 
-# obj0, obj1, obj2 are created here...
+batch_size = 5
+num_classes = 2
+epochs = 5
 
-DEBUG = True
-
-batch_size = 128
-num_classes = 1
-epochs = 12
-
-base_bone_dir = '/home/guy/jmcs-atml-bone-age-prediction/datasets/'
-path_var_store = '/home/guy/jmcs-atml-bone-age-prediction/variables/'
 # input image dimensions
 img_rows, img_cols = 384, 384
+# number of convolutional filters to use
+filters = 32
+# size of pooling area for max pooling
+pool_size = 2
+# convolution kernel size
+kernel_size = 3
+
+input_shape = (img_rows, img_cols,1)
+
+DEBUG = True
+Server = False
+
 img_size_bone_age_model = 384
+
+
+# input image dimensions
+if Server == False:
+    base_bone_dir = '/home/guy/jmcs-atml-bone-age-prediction/datasets/'
+    path_var_store = '/home/guy/jmcs-atml-bone-age-prediction/variables/'
+else:
+    base_bone_dir = '/var/tmp/studi5/boneage/datasets/boneage/'
+    path_var_store = '/var/tmp/studi5/boneage/variables/'
 
 def convert_gray_to_rgb(im_list):
     # I think this will be slow
@@ -111,11 +126,16 @@ def TrainPredictorModel(img_train, errorpred_train, img_val, errorpred_val):
     
     datagen.fit(img_train)
     
-    model_predictor.fit_generator(datagen.flow(img_train, errorpred_train, batch_size=16),
-                                  steps_per_epoch = 600,epochs=3,
-                                  callbacks=[logger, earlystopping, checkpoint, reduceLROnPlat],
-                                  validation_data=(img_val, errorpred_val),verbose=1)
-    
+    #img_train = img_train[:,:,:,0]
+    #img_val = img_val[:,:,:,0]
+
+    model_predictor.fit(img_train, errorpred_train,
+                        batch_size=batch_size,
+                        epochs=epochs,
+                        callbacks=[logger, earlystopping, checkpoint, reduceLROnPlat],
+                        verbose=1,
+                        validation_data=(img_val, errorpred_val))
+        
     scores = model_predictor.evaluate(img_val, errorpred_val, verbose=1)
     print(scores)
 
@@ -145,22 +165,30 @@ def ExtractimageQuality(model_bone_age):
     TrainPredictorModel(img_train, errorpred_train, img_val, errorpred_val)
     
     
-    
   
 
 def ImageSelectorModel():
-    input_shape = (img_rows, img_cols,1)
-    model = Sequential()
-    model.add(Conv2D(32, kernel_size=(3, 3),
-                 activation='relu',
-                 input_shape=input_shape))
-    model.add(Conv2D(64, (3, 3), activation='relu'))
-    model.add(MaxPooling2D(pool_size=(2, 2)))
-    model.add(Dropout(0.25))
-    model.add(Flatten())
-    model.add(Dense(128, activation='relu'))
-    model.add(Dropout(0.5))
-    model.add(Dense(num_classes, activation='softmax'))
+    # define two groups of layers: feature (convolutions) and classification (dense)
+    feature_layers = [
+            Conv2D(filters, kernel_size,padding='valid',input_shape=input_shape),
+            Activation('relu'),
+            Conv2D(filters, kernel_size),
+            Activation('relu'),
+            MaxPooling2D(pool_size=pool_size),
+            Dropout(0.25),
+            Flatten(),
+            ]
+
+    classification_layers = [
+            Dense(128),
+            Activation('relu'),
+            Dropout(0.5),
+            Dense(num_classes),
+            Activation('softmax')
+            ]
+
+    # create complete model
+    model = Sequential(feature_layers + classification_layers)
     return model
 
 def TrainImageSelector(model, xtrain, ytrain, xtest, ytest):
@@ -213,7 +241,6 @@ def LoadData2Mem(data_list_use, img_size=500):
     gender_data = np.array(np.reshape(gender_data,(-1,)), dtype='float32')
     return img_data, boneage_data, gender_data
 
-
 #DEBUGGING
 # Getting back the objects:
 if DEBUG == True:
@@ -223,5 +250,8 @@ if DEBUG == True:
 
     with open(path_var_store + 'objs.pkl', 'rb') as f:  # Python 3: open(..., 'rb')
         img_train, errorpred_train, img_val, errorpred_val = pickle.load(f)
+
+    errorpred_train = keras.utils.to_categorical(errorpred_train, num_classes)
+    errorpred_val = keras.utils.to_categorical(errorpred_val, num_classes)
 
     TrainPredictorModel(img_train, errorpred_train, img_val, errorpred_val)
