@@ -105,7 +105,7 @@ if __name__ == '__main__':
     DISEASE_CLASS_STR_COL = 'Finding Labels'
     DISEASE_ENABLED = True
     AGE_ENABLED = False
-    #execute()
+    execute()
     DISEASE_CLASS_STR_COL = 'Patient Age'
     DISEASE_ENABLED = False
     AGE_ENABLED = True
