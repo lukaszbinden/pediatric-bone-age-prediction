@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#$ -N experiment_disease.py
+#$ -N experiments/experiment_disease.py
 #$ -S /bin/bash
 #$ -cwd
 #$ -j y
@@ -18,4 +18,4 @@
 #$ -m ea
 #$ -M joel.niklaus@students.unibe.ch,lukas.zbinden@unifr.ch
 
-python experiment_disease.py
+python experiments/experiment_disease.py
