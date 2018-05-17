@@ -8,7 +8,7 @@ from sklearn.model_selection import train_test_split
 
 base_dir = '/var/tmp/studi5/boneage/'
 base_datasets_dir = base_dir + 'datasets/'
-chest_dataset_dir = base_datasets_dir + 'nih-chest-xrays/'  # 'nih-chest-xrays-full/'
+chest_dataset_dir = base_datasets_dir + 'nih-chest-xrays-full/'
 boneage_dataset_dir = base_datasets_dir + 'boneage/'
 
 class_str_col_boneage = 'boneage'
