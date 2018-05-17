@@ -5,7 +5,10 @@ from keras.layers import Flatten, Dense, concatenate, AveragePooling2D, BatchNor
 import numpy as np
 
 
-def get_model(model, gender_input_enabled, age_output_enabled, disease_enabled, pretrained='imagenet'):
+def get_model(model, gender_input_enabled,
+              age_output_enabled,
+              disease_enabled,
+              pretrained='imagenet'):
     """
 
     :param model: 'baseline', 'own' or 'winner
@@ -17,13 +20,13 @@ def get_model(model, gender_input_enabled, age_output_enabled, disease_enabled, 
     """
     assert age_output_enabled or disease_enabled
 
-    input_gender = Input(shape=(1,), name='input_gender')
     input_img = Input(shape=(299, 299, 3), name='input_img')
 
     conv_base = get_conv_base(input_img, model, pretrained)
 
     inputs = [input_img]
     if gender_input_enabled:
+        input_gender = Input(shape=(1,), name='input_gender')
         inputs.append(input_gender)
         feature = concatenate([conv_base, get_gender(input_gender)], axis=1)
     else:
@@ -39,7 +42,7 @@ def get_model(model, gender_input_enabled, age_output_enabled, disease_enabled, 
     if disease_enabled:
         # number of disease categories = 14 and additionally "No Finding"
         # and "several diseases combined, separated with |"
-        output_disease = Dense(14, name='output_disease')(classifier)
+        output_disease = Dense(14, name='output_disease', activation='sigmoid')(classifier)
         outputs.append(output_disease)
 
     assert len(outputs) > 0
@@ -52,7 +55,7 @@ def get_conv_base(input_img, model, pretrained):
         return get_baseline(input_img, pretrained)
     elif model == 'own':
         return get_own(input_img, pretrained)
-    elif model == 'winner':
+    elif model == 'winner':  # our approx. of 16bit winner model
         return get_winner(input_img, pretrained)
 
 

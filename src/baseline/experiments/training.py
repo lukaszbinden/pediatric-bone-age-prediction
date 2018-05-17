@@ -4,19 +4,30 @@ from keras.callbacks import EarlyStopping, ReduceLROnPlateau
 from keras.optimizers import Adam
 
 
-def train(train_gen, val_gen, steps_per_epoch, validation_steps, model, optimizer=Adam(),
-          loss='mean_absolute_error', lr=0.0001, num_epochs=100,
+def train(train_gen, val_gen,
+          steps_per_epoch,
+          validation_steps,
+          model,
+          optimizer=Adam(),
+          loss='mean_absolute_error',
+          lr=0.0001,
+          num_epochs=100,
           finetuning=False,
-          num_trainable_layers=20):
+          num_trainable_layers=20,
+          metrics=['mae']):
     """
     :param train_gen:
     :param val_gen:
+    :param steps_per_epoch:
+    :param validation_steps:
     :param model:
     :param optimizer:
     :param loss:
     :param lr:
     :param num_epochs:
+    :param finetuning: False basically means all layers will be trained
     :param num_trainable_layers:
+    :param metrics:
     :return:
     """
 
@@ -31,7 +42,9 @@ def train(train_gen, val_gen, steps_per_epoch, validation_steps, model, optimize
         for layer in model.layers[-num_trainable_layers:]:
             layer.trainable = True
 
-    model.compile(optimizer=optimizer, loss=loss, metrics=['mae'])  # if two outputs are defined two losses and loss_weights could be defined
+    # TODO at work diseasee....
+    model.compile(optimizer=optimizer, loss=loss, metrics=metrics)  # if two outputs are defined two losses and loss_weights could be defined
+
     model.summary()  # prints the network structure
 
     earlyStopping = EarlyStopping(monitor="val_loss", mode="min",
