@@ -18,4 +18,4 @@
 #$ -m ea
 #$ -M joel.niklaus@students.unibe.ch,lukas.zbinden@unifr.ch
 
-python experiment_freezed_layers.py
+python experiments/experiment_freezed_layers.py
