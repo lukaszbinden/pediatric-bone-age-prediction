@@ -60,7 +60,7 @@ def execute():
                     OPTIMIZER, LOSS, LEARNING_RATE, hp.NUM_EPOCHS,
                     finetuning=False,
                     num_trainable_layers=NUM_TRAINABLE_LAYERS,
-                    metrics=['mae'])
+                    metrics=['accuracy'])
 
     print('Chest dataset (final): val_mean_absolute_error: ', history.history['val_mean_absolute_error'][-1])
 
