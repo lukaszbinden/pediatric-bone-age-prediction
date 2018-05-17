@@ -19,6 +19,7 @@ from keras.models import Model
 from keras.layers import BatchNormalization
 from keras.callbacks import ModelCheckpoint, LearningRateScheduler, EarlyStopping, ReduceLROnPlateau, LambdaCallback
 from keras.metrics import mean_absolute_error
+from keras.models import load_model
 
 import pickle
 from skimage.exposure import rescale_intensity
@@ -26,16 +27,24 @@ from skimage.exposure import equalize_hist, equalize_adapthist
 
 import ImageSelector as imgsel
 
-server = False
-
-
+Server = False
 
 #/home/guy/jmcs-atml-bone-age-prediction/datasets
 #/var/tmp/studi5/boneage/datasets/boneage/
-if server == False:
+if Server == False:
     base_bone_dir = '/home/guy/jmcs-atml-bone-age-prediction/datasets/'
+    path_var_store = '/home/guy/jmcs-atml-bone-age-prediction/variables/'
 else:
     base_bone_dir = '/var/tmp/studi5/boneage/datasets/boneage/'
+    path_var_store = '/var/tmp/studi5/boneage/variables/'
+
+model_prediction_dir = 'ModelPrediction/'
+
+#-----------------------------------
+#LOAD MODEL FOR PREDICTING ACCURACY
+#-----------------------------------
+
+model_accuracy = load_model(base_bone_dir + model_prediction_dir+ 'weights-03-0.55.h5')
     
 age_df = pd.read_csv(os.path.join(base_bone_dir, 'boneage-training-dataset.csv'))  # read csv
 age_df['path'] = age_df['id'].map(lambda x: os.path.join(base_bone_dir, 'boneage-training-dataset','{}.png'.format(x)))  # add path to dictionary
@@ -89,6 +98,24 @@ def prepro(x):
 
 def on_epoch_end_(epoch, logs):
     print("End of Epoch")
+    
+    
+    #----------------Predict output on all data-------------------
+    list_data = imgsel.LoadDataList('boneage-training-dataset.csv')#need to be changed
+    # Reduced train list
+    train_list = dict((k, v) for k, v in list_data.items() if k > 500 and k < 1500)
+    #val_list = dict((k, v) for k, v in list_data.items() if k > 300 and k < 350)
+    #if epoch == 0:
+    img_train, boneage_train, gender_train= imgsel.LoadData2Mem(train_list, 384)
+    img_train = imgsel.convert_gray_to_rgb(img_train)
+    prediction = bone_age_model.predict(img_train)
+    list_png = [x[1][0] for x in train_list.items()]
+    list_png_pred = list(zip(list_png,prediction[0]))
+    
+    #save data
+    with open(path_var_store + 'objs2.pkl', 'wb') as f:  # Python 3: open(..., 'wb')
+        pickle.dump([list_png_pred], f)
+
     #if epoch ==0:
         # --------------------------------------------
         # ACCURACY PREDICTOR MODEL
@@ -208,8 +235,8 @@ bone_age_model.summary()
 
 weight_path = base_bone_dir + "{}_weights.best.hdf5".format('bone_age')
 
-checkpoint = ModelCheckpoint(base_bone_dir+'weights-{epoch:02d}-{val_loss:.2f}.h5', monitor='val_loss', save_best_only=True, verbose=1, mode='min')
-#checkpoint = ModelCheckpoint(weight_path, monitor='val_loss', verbose=1, save_best_only=True, mode='min', save_weights_only=False)
+#checkpoint = ModelCheckpoint(base_bone_dir+'weights-{epoch:02d}-{val_loss:.2f}.h5', monitor='val_loss', save_best_only=True, verbose=1, mode='min')
+checkpoint = ModelCheckpoint(weight_path, monitor='val_loss', verbose=1, save_best_only=True, mode='min', save_weights_only=False)
 
 reduceLROnPlat = ReduceLROnPlateau(monitor='val_loss', factor=0.8, patience=10, verbose=1, mode='auto', epsilon=0.0001, cooldown=5, min_lr=0.0001)
 
@@ -219,7 +246,10 @@ early = EarlyStopping(monitor="val_loss", mode="min", patience=5)  # probably ne
 callbacks_list = [checkpoint, early, reduceLROnPlat, lambdacall]
 
 
+
+
 history = bone_age_model.fit_generator(train_gen, validation_data=(test_X, test_Y), epochs=1, callbacks=callbacks_list)
+
 
 with open('/var/tmp/studi5/boneage/git/jmcs-atml-bone-age-prediction/TrainingHistory/history_std_normalization', 'wb') as file_pi:
         pickle.dump(history.history, file_pi)
