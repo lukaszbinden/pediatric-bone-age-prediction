@@ -21,6 +21,7 @@ from keras.layers import Dense, Dropout, Flatten, Activation
 from keras.layers import Conv2D, MaxPooling2D
 from keras.callbacks import ModelCheckpoint, LearningRateScheduler, CSVLogger, EarlyStopping, ReduceLROnPlateau, LambdaCallback
 from keras import backend as K
+from keras.models import load_model
 
 import csv
 from PIL import Image
@@ -44,7 +45,7 @@ kernel_size = 3
 
 input_shape = (img_rows, img_cols,1)
 
-DEBUG = True
+DEBUG = 1 # 0 -> no debugging, 1 -> list form , 2 ->
 Server = False
 
 img_size_bone_age_model = 384
@@ -57,6 +58,13 @@ if Server == False:
 else:
     base_bone_dir = '/var/tmp/studi5/boneage/datasets/boneage/'
     path_var_store = '/var/tmp/studi5/boneage/variables/'
+
+model_prediction_dir = 'ModelPrediction/'
+
+#-----------------------------------
+#LOAD MODEL FOR PREDICTING ACCURACY
+#-----------------------------------
+model_accuracy = load_model(base_bone_dir + model_prediction_dir+ 'weights-03-0.55.h5')
 
 def convert_gray_to_rgb(im_list):
     # I think this will be slow
@@ -94,10 +102,10 @@ def TrainPredictorModel(img_train, errorpred_train, img_val, errorpred_val):
     #history = bone_age_model.fit_generator(train_gen, validation_data=(test_X, test_Y))
     logger = CSVLogger(base_bone_dir+'/log.csv', separator=',', append=False)
     earlystopping = EarlyStopping(monitor='val_loss', min_delta=0.01, patience=10, verbose=10, mode='min')
-    checkpoint = ModelCheckpoint(base_bone_dir+'weights-{epoch:02d}-{val_loss:.2f}.h5', monitor='val_loss', save_best_only=True, verbose=1, mode='min')
+    checkpoint = ModelCheckpoint(base_bone_dir+model_prediction_dir+'weights-{epoch:02d}-{val_loss:.2f}.h5', monitor='val_loss', save_best_only=True, verbose=1, mode='min')
     reduceLROnPlat = ReduceLROnPlateau(monitor='val_loss', factor=0.8, patience=10, verbose=1, mode='auto', epsilon=0.0001, cooldown=5, min_lr=0.0001)
 
-    model_predictor.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
+    model_predictor.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
     
     #imgsel.TrainImageSelector(model_predictor, NextSet_X, NextSet_Y, NextSet_X, NextSet_Y)
     datagen = ImageDataGenerator(#featurewise_center = True/False
@@ -241,9 +249,31 @@ def LoadData2Mem(data_list_use, img_size=500):
     gender_data = np.array(np.reshape(gender_data,(-1,)), dtype='float32')
     return img_data, boneage_data, gender_data
 
+def LoadImg2Mem(img_list_use, img_size=500):
+    img_data=[]
+    #boneage_data=[]
+    #gender_data=[]
+    for i in img_list_use:
+        img_name = base_bone_dir+'boneage-training-dataset/'+str(i)+'.png'
+        img = Image.open(img_name).convert('L')
+        img = np.array(scipy.misc.imresize (img, (img_size, img_size)))
+        #boneage =  int(data_list_use[i][1])
+        #gender = data_list_use[i][2]
+        #if gender=='True': ##is male
+        #    gender_int=1
+        #else:
+        #    gender_int=0
+        img_data.append(img)
+        #boneage_data.append(boneage)
+        #gender_data.append(gender_int)
+    img_data = (np.array(np.reshape(img_data, (-1, img_size_bone_age_model, img_size_bone_age_model, 1)), dtype='float32')/255.0)-0.5
+    #boneage_data = np.array(np.reshape(boneage_data,(-1,)), dtype='float32')
+    #gender_data = np.array(np.reshape(gender_data,(-1,)), dtype='float32')
+    return img_data
+
 #DEBUGGING
 # Getting back the objects:
-if DEBUG == True:
+if DEBUG == 2:
     print("---------------------------------------")
     print("----------------Debug------------------")
     print("---------------------------------------")
@@ -251,7 +281,67 @@ if DEBUG == True:
     with open(path_var_store + 'objs.pkl', 'rb') as f:  # Python 3: open(..., 'rb')
         img_train, errorpred_train, img_val, errorpred_val = pickle.load(f)
 
+    #create binary output 1-0 from true-false list
     errorpred_train = keras.utils.to_categorical(errorpred_train, num_classes)
     errorpred_val = keras.utils.to_categorical(errorpred_val, num_classes)
+    
+    #model = load_model(base_bone_dir + 'weights-01-537.05.h5')
 
     TrainPredictorModel(img_train, errorpred_train, img_val, errorpred_val)
+elif DEBUG ==1:
+    print("---------------------------------------")
+    print("----------------Debug------------------")
+    print("---------------------------------------")
+    
+    '''
+    prediction = list(range(0,7))
+    list_png = list(range(1378,1385))
+    list_png_pred = list(zip(list_png,prediction))
+    
+    #sCreating dummy data
+    with open(path_var_store + 'objs2.pkl', 'wb') as f:  # Python 3: open(..., 'wb')
+        pickle.dump([list_png_pred], f)
+    '''
+    
+    with open(path_var_store + 'objs2.pkl', 'rb') as f:  # Python 3: open(..., 'rb')
+        list_png_pred = pickle.load(f)
+    
+    list_png_pred = list(list_png_pred)
+
+    list_png = [x[0] for x in list_png_pred[0]]
+    list_prediction = [x[1] for x in list_png_pred[0]]
+    
+    length_data = len(list_png_pred[0])
+    
+    list_data = LoadDataList('boneage-training-dataset.csv')#need to be changed
+    
+    tolerance = 0.3  
+    Y = []
+    index = 0
+    for key in list_data:
+        if list_data[key][0]==str(list_png[index]):
+            if list_prediction[index] < int(list_data[key][1])*(1+tolerance) and list_prediction[index] > int(list_data[key][1])*(1-tolerance):
+                Y.append(True)
+            else:
+                Y.append(False)
+            if index<length_data-1:
+                index += 1
+    
+    length_train = int(0.8*length_data)
+    
+    x_train = list_png[0:length_train]
+    y_train = Y[0:length_train]
+    
+    x_val = list_png[length_train:length_data]
+    y_val = Y[length_train:length_data]
+    
+    x_train = LoadImg2Mem(x_train, img_size_bone_age_model) 
+    x_val = LoadImg2Mem(x_val, img_size_bone_age_model)
+
+    y_train = keras.utils.to_categorical(y_train, num_classes)
+    y_val = keras.utils.to_categorical(y_val, num_classes)
+    
+    TrainPredictorModel(x_train, y_train, x_val, y_val)
+    print("EOF")
+    #img_val, boneage_val, gender_val= LoadData2Mem(val_list, img_size_bone_age_model)
+    
