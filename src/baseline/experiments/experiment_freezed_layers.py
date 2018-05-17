@@ -1,6 +1,6 @@
-from Project.src.baseline.experiments.data_preparation import get_gen
-from Project.src.baseline.experiments.model import get_model
-from Project.src.baseline.experiments.training import train
+from data_preparation import get_gen
+from model import get_model
+from training import train
 from keras.optimizers import Adam, SGD
 from keras.preprocessing.image import ImageDataGenerator
 

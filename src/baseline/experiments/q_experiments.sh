@@ -18,4 +18,4 @@
 #$ -m ea
 #$ -M joel.niklaus@students.unibe.ch,lukas.zbinden@unifr.ch
 
-python experiments.py
+python experiments/experiments.py
