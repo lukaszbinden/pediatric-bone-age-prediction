@@ -1,7 +1,7 @@
-from src.baseline.experiments.data_preparation import get_gen
-from src.baseline.experiments.model import get_model
-from src.baseline.experiments.training import train
-import src.baseline.experiments.global_hyperparams as hp
+from data_preparation import get_gen
+from model import get_model
+from training import train
+import global_hyperparams as hp
 
 from keras.optimizers import Adam, SGD
 from keras.preprocessing.image import ImageDataGenerator

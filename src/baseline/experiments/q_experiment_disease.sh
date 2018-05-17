@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#$ -N experiments/experiment_disease.py
+#$ -N experiment_disease.py
 #$ -S /bin/bash
 #$ -cwd
 #$ -j y
