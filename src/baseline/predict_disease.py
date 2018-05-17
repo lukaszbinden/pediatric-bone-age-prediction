@@ -35,6 +35,13 @@ chest_dataset_dir = base_datasets_dir + 'nih-chest-xrays/'  # 'nih-chest-xrays-f
 IMG_SIZE = (299, 299)
 
 
+class_str_col_boneage = 'boneage'
+class_str_col_chest = 'Patient Age'
+disease_str_col = 'Finding Labels'
+gender_str_col_chest = 'Patient Gender'
+gender_str_col = gender_str_col_chest
+
+
 def get_chest_dataframe():
     img_dir = 'images'
     csv_name = 'sample_labels_sm.csv'
@@ -65,10 +72,6 @@ def get_chest_dataframe():
 
     return chest_df
 
-class_str_col_boneage = 'boneage'
-class_str_col_chest = 'Patient Age'
-disease_str_col = 'Finding Labels'
-gender_str_col_chest = 'Patient Gender'
 
 core_idg = ImageDataGenerator(rotation_range=20, width_shift_range=0.2, height_shift_range=0.2,
                               zoom_range=0.2, horizontal_flip=True)
@@ -82,15 +85,16 @@ train_df, val_df = train_test_split(df, test_size=0.2, random_state=2018)
 
 train_gen = flow_from_dataframe(core_idg, train_df, path_col='path', y_col=class_str_col,
                                 target_size=IMG_SIZE,
-                                color_mode='rgb', batch_size=16)
+                                color_mode='rgb', batch_size=BATCH_SIZE_TRAIN)
 
 val_gen = flow_from_dataframe(val_idg, val_df, path_col='path', y_col=class_str_col,
                               target_size=IMG_SIZE,
                               color_mode='rgb',
-                              batch_size=16)
+                              batch_size=BATCH_SIZE_VAL)
 
-
+input_gender = Input(shape=(1,), name='input_gender')
 i1 = Input(shape=(299, 299, 3), name='input_img')
+inputs = [i1, input_gender]
 base = InceptionV3(input_tensor=i1, input_shape=(299, 299, 3), include_top=False, weights=None)
 
 num_trainable_layers = 5
@@ -103,12 +107,15 @@ for layer in base.layers[-num_trainable_layers:]:
 feature_img = base.get_layer(name='mixed10').output
 feature_img = AveragePooling2D((2, 2))(feature_img)
 feature_img = Flatten()(feature_img)
-feature = feature_img
+feature_gender = Dense(32, activation='relu')(input_gender)
+feature = concatenate([feature_img, feature_gender], axis=1)
+# feature = feature_img
 o = Dense(1000, activation='relu')(feature)
 o = Dense(1000, activation='relu')(o)
 o = Dense(14, name='output_disease', activation='sigmoid')(o)
-model = Model(inputs=i1, outputs=o)
-optimizer = Adam(lr=1e-3)
+model = Model(inputs=inputs, outputs=o)
+# model = Model(inputs=i1, outputs=o)
+# optimizer = Adam(lr=1e-3)
 # model.compile(loss='mean_absolute_error', optimizer=optimizer, metrics=['mae'])
 sgd = SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
 model.compile(optimizer=sgd,
@@ -125,12 +132,29 @@ reduceLROnPlateau = ReduceLROnPlateau(monitor='val_loss', factor=0.8, patience=1
                                       cooldown=5, min_lr=LEARNING_RATE * 0.1)
 
 
-def combined_generators(image_generator, disease, batch_size):
+def combined_generators(image_generator, gender, disease, batch_size):
+    gender_generator = cycle(batch(gender, batch_size))
     disease_generator = cycle(batch(disease, batch_size))
     while True:
         nextImage = next(image_generator)
+        # print('nextImage[0]')
+        # print(nextImage[0])
+        # print('nextImage[1]')
+        # print(nextImage[1])
+        nextGender = next(gender_generator)
+        # print('nextGender')
+        # print(nextGender)
+        # print('np.stack(nextGender.values)')
+        # print(np.stack(nextGender.values))
+        assert len(nextImage[0]) == len(nextGender)
         nextDisease = next(disease_generator)
-        yield nextImage[0], nextDisease
+        # print('nextDisease')
+        # print(nextDisease)
+        # print('np.stack(nextDisease.values)')
+        # print(np.stack(nextDisease.values))
+        assert len(nextImage[0]) == len(nextDisease)
+        yield [nextImage[0], np.stack(nextGender.values)], np.stack(nextDisease.values)
+        # yield nextImage[0], np.stack(nextDisease.values)
 
 
 def batch(iterable, n=1):
@@ -139,10 +163,21 @@ def batch(iterable, n=1):
         yield iterable[ndx:min(ndx + n, l)]
 
 
-#train_gen_wrapper = combined_generators(train_gen, train_df[disease_str_col], 8)
-#val_gen_wrapper = combined_generators(val_gen, val_df[disease_str_col], 8)
+# print('train_gen.classes[:10]')
+# print(train_gen.classes[:10])
+# print('train_df[disease_str_col].values')
+# print(train_df[disease_str_col].values)
+# print('np.stack(train_df[disease_str_col].values)')
+# print(np.stack(train_df[disease_str_col].values))
+# print('train_df[disease_str_col].values')
+# print(train_df[disease_str_col].values)
 
-history = model.fit_generator(train_gen, validation_data=val_gen,
+train_gen_wrapper = combined_generators(train_gen, train_df[gender_str_col], train_df[disease_str_col], BATCH_SIZE_TRAIN)
+val_gen_wrapper = combined_generators(val_gen, val_df[gender_str_col], val_df[disease_str_col], BATCH_SIZE_VAL)
+# train_gen_wrapper = train_gen
+# val_gen_wrapper = val_gen
+
+history = model.fit_generator(train_gen_wrapper, validation_data=val_gen_wrapper,
                               epochs=NUM_EPOCHS, verbose=1,
                               steps_per_epoch=len(train_gen),
                               validation_steps=len(val_gen),
