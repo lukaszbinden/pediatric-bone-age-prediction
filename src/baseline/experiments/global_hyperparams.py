@@ -6,4 +6,3 @@
 NUM_EPOCHS = 5
 IMG_SIZE = (299, 299)
 METRIC = ['mae']
-

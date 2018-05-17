@@ -25,7 +25,7 @@ def train(train_gen, val_gen,
     :param loss:
     :param lr:
     :param num_epochs:
-    :param finetuning:
+    :param finetuning: False basically means all layers will be trained
     :param num_trainable_layers:
     :param metrics:
     :return:
