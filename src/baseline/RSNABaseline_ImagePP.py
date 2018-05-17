@@ -28,6 +28,8 @@ import ImageSelector as imgsel
 
 server = False
 
+
+
 #/home/guy/jmcs-atml-bone-age-prediction/datasets
 #/var/tmp/studi5/boneage/datasets/boneage/
 if server == False:
@@ -67,6 +69,10 @@ def plotimghist(img):
     plt.show()
 
 def prepro(x):
+    
+    # ----------------------------------------------------
+    # IF ACCURACY PREDICTION IS NOT GOOD ENOUGHT -> REMOVE
+    # -----------------------------------------------------
   
     #for i in range(x.shape[2]):
         #img = x[:,:,2]
@@ -82,13 +88,23 @@ def prepro(x):
     return x
 
 def on_epoch_end_(epoch, logs):
-    #model saved/var/tmp/studi5/boneage/datasets/boneage/bone_age_weights.best.hdf5
-    print(epoch)
-    print(logs)
     print("End of Epoch")
-    #bone_age_model = model.evaluate(x_test, y_test, verbose=0)
-    #imgsel_model = imgsel.ImageSelectorModel()
+    #if epoch ==0:
+        # --------------------------------------------
+        # ACCURACY PREDICTOR MODEL
+        # --------------------------------------------
+        #model_accuracy_predictor.fit()
+        #train_list_use = imgsel.LoadDataList('boneage-training-dataset.csv')#need to be changed
+        #val_list_use = imgsel.LoadDataList('boneage-test-dataset.csv')
 
+        #num_train_sample = len(train_list_use)
+        #num_val_sample = len(val_list_use)
+
+        #img_train, boneage_train, gender_train=imgsel.LoadData2Mem(train_list_use, 500)
+        #img_val, boneage_val, gender_val=imgsel.LoadData2Mem(val_list_use, 500)
+
+         
+        
 IMG_SIZE = (384, 384)  # slightly smaller than vgg16 normally expects
 core_idg = ImageDataGenerator(#featurewise_center = True/False
                               samplewise_center=False,
@@ -108,7 +124,7 @@ core_idg = ImageDataGenerator(#featurewise_center = True/False
                               horizontal_flip=True,
                               vertical_flip=False,
                               #rescale = 
-                              preprocessing_function=prepro,
+                              #preprocessing_function=prepro,
                               #data_format = 
                               #validation_split
                               height_shift_range=0.15
@@ -192,7 +208,8 @@ bone_age_model.summary()
 
 weight_path = base_bone_dir + "{}_weights.best.hdf5".format('bone_age')
 
-checkpoint = ModelCheckpoint(weight_path, monitor='val_loss', verbose=1, save_best_only=True, mode='min', save_weights_only=True)
+checkpoint = ModelCheckpoint(base_bone_dir+'weights-{epoch:02d}-{val_loss:.2f}.h5', monitor='val_loss', save_best_only=True, verbose=1, mode='min')
+#checkpoint = ModelCheckpoint(weight_path, monitor='val_loss', verbose=1, save_best_only=True, mode='min', save_weights_only=False)
 
 reduceLROnPlat = ReduceLROnPlateau(monitor='val_loss', factor=0.8, patience=10, verbose=1, mode='auto', epsilon=0.0001, cooldown=5, min_lr=0.0001)
 
@@ -202,7 +219,7 @@ early = EarlyStopping(monitor="val_loss", mode="min", patience=5)  # probably ne
 callbacks_list = [checkpoint, early, reduceLROnPlat, lambdacall]
 
 
-history = bone_age_model.fit_generator(train_gen, validation_data=(test_X, test_Y), epochs=15, callbacks=callbacks_list)
+history = bone_age_model.fit_generator(train_gen, validation_data=(test_X, test_Y), epochs=1, callbacks=callbacks_list)
 
 with open('/var/tmp/studi5/boneage/git/jmcs-atml-bone-age-prediction/TrainingHistory/history_std_normalization', 'wb') as file_pi:
         pickle.dump(history.history, file_pi)
