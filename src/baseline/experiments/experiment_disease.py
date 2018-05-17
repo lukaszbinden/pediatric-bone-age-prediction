@@ -12,7 +12,7 @@ BATCH_SIZE_VAL = 16
 LOSS = 'mae'
 OPTIMIZER = Adam()
 NUM_TRAINABLE_LAYERS = 20
-disease_str_col = 'Finding Labels'
+DISEASE_STR_COL = 'Finding Labels'
 
 
 def execute():
@@ -31,7 +31,7 @@ def execute():
                                                                                             'chest',
                                                                                             age_enabled=AGE_ENABLED,
                                                                                             disease_enabled=DISEASE_ENABLED,
-                                                                                            predicted_class_col=disease_str_col)
+                                                                                            predicted_class_col=DISEASE_CLASS_STR_COL)
     train_gen_boneage, val_gen_boneage, steps_per_epoch_boneage, validation_steps_boneage = get_gen(train_idg, val_idg,
                                                                                                     hp.IMG_SIZE,
                                                                                                     BATCH_SIZE_TRAIN,
@@ -47,8 +47,12 @@ def execute():
                             pretrained='imagenet')
 
     # OPTIMIZER = Adam(lr=1e-3)
-    OPTIMIZER = SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
-    LOSS = 'binary_crossentropy'
+    if DISEASE_ENABLED and not AGE_ENABLED:
+        OPTIMIZER = SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
+        LOSS = 'binary_crossentropy'
+    elif AGE_ENABLED and not DISEASE_ENABLED:
+        OPTIMIZER = hp.OPTIMIZER_ADAM_DEFAULT
+        LOSS = hp.LOSS_DEFAULT
 
     history = train(train_gen_chest, val_gen_chest, steps_per_epoch_chest,
                     validation_steps_chest, chest_model,
@@ -59,21 +63,24 @@ def execute():
 
     print('Chest dataset (final): val_mean_absolute_error: ', history.history['val_mean_absolute_error'][-1])
 
-    # now build new model for age prediction
-    boneage_model = get_model(model='winner',
-                              gender_input_enabled=True,
-                              age_output_enabled=True,
-                              disease_enabled=False,
-                              pretrained='imagenet')
+    if DISEASE_ENABLED and not AGE_ENABLED:
+        # now build new model for age prediction
+        boneage_model = get_model(model='winner',
+                                  gender_input_enabled=True,
+                                  age_output_enabled=True,
+                                  disease_enabled=False,
+                                  pretrained='imagenet')
 
-    # save all weights from chest learning
-    weights_chest_learning = [layer.get_weights() for layer in chest_model.layers]
-    # now do transfer learning: transfer weights (except last layer)
-    num_layers = len(weights_chest_learning)
-    num_layers_transfer = num_layers - 1
-    print('transfer ', num_layers_transfer, 'of total of ', num_layers)
-    for i in range(num_layers_transfer):
-        boneage_model.layers[i].set_weights(weights_chest_learning[i])
+        # save all weights from chest learning
+        weights_chest_learning = [layer.get_weights() for layer in chest_model.layers]
+        # now do transfer learning: transfer weights (except last layer)
+        num_layers = len(weights_chest_learning)
+        num_layers_transfer = num_layers - 1
+        print('transfer ', num_layers_transfer, 'of total of ', num_layers)
+        for i in range(num_layers_transfer):
+            boneage_model.layers[i].set_weights(weights_chest_learning[i])
+    elif AGE_ENABLED and not DISEASE_ENABLED:
+        boneage_model = chest_model
 
     OPTIMIZER = Adam(lr=LEARNING_RATE, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0)
     LOSS = 'mae'
@@ -94,9 +101,11 @@ if __name__ == '__main__':
     # DISEASE_ENABLED = True
     # AGE_ENABLED = True
     # execute()
+    DISEASE_CLASS_STR_COL = 'Finding Labels'
     DISEASE_ENABLED = True
     AGE_ENABLED = False
     execute()
-    # DISEASE_ENABLED = False
-    # AGE_ENABLED = True
-    # execute()
+    DISEASE_CLASS_STR_COL = 'Patient Age'
+    DISEASE_ENABLED = False
+    AGE_ENABLED = True
+    execute()
