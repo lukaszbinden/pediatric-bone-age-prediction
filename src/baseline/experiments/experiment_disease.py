@@ -1,9 +1,10 @@
-from data_preparation import get_gen
-from model import get_model
-from training import train
+from Project.src.baseline.experiments.data_preparation import get_gen
+from Project.src.baseline.experiments.model import get_model
+from Project.src.baseline.experiments.training import train
+import Project.src.baseline.experiments.global_hyperparams as hp
+
 from keras.optimizers import Adam, SGD
 from keras.preprocessing.image import ImageDataGenerator
-import global_hyperparams as hp
 
 # Hyperparameters
 LEARNING_RATE = 0.001
