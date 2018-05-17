@@ -11,9 +11,10 @@ BATCH_SIZE_TRAIN = 16
 BATCH_SIZE_VAL = 16
 LOSS = 'mae'
 OPTIMIZER = Adam()
-NUM_TRAINABLE_LAYERS = 10
+NUM_TRAINABLE_LAYERS = 20
 IMG_SIZE = (299, 299)
 
+disease_str_col = 'Finding Labels'
 
 def execute():
     """
@@ -28,42 +29,55 @@ def execute():
     train_gen_chest, val_gen_chest, steps_per_epoch_chest, validation_steps_chest = get_gen(train_idg, val_idg,
                                                                                             IMG_SIZE, BATCH_SIZE_TRAIN,
                                                                                             BATCH_SIZE_VAL,
-                                                                                            'chest_boneage_range',
-                                                                                            disease_enabled=DISEASE_ENABLED)
+                                                                                            'chest',
+                                                                                            age_enabled=AGE_ENABLED,
+                                                                                            disease_enabled=DISEASE_ENABLED,
+                                                                                            predicted_class_col=disease_str_col)
     train_gen_boneage, val_gen_boneage, steps_per_epoch_boneage, validation_steps_boneage = get_gen(train_idg, val_idg,
                                                                                                     IMG_SIZE,
                                                                                                     BATCH_SIZE_TRAIN,
                                                                                                     BATCH_SIZE_VAL,
                                                                                                     'boneage',
+                                                                                                    age_enabled=AGE_ENABLED,
                                                                                                     disease_enabled=False)
 
-    model = get_model(model='winner', gender_input_enabled=True, age_output_enabled=AGE_ENABLED, disease_enabled=DISEASE_ENABLED,
+    model = get_model(model='winner',
+                      gender_input_enabled=True,
+                      age_output_enabled=AGE_ENABLED,
+                      disease_enabled=DISEASE_ENABLED,
                       pretrained='imagenet')
 
-    OPTIMIZER = Adam(lr=1e-3)
+    # OPTIMIZER = Adam(lr=1e-3)
+    OPTIMIZER = SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
+    LOSS = 'binary_crossentropy'
 
     history = train(train_gen_chest, val_gen_chest, steps_per_epoch_chest,
                     validation_steps_chest, model,
                     OPTIMIZER, LOSS, LEARNING_RATE, NUM_EPOCHS,
                     finetuning=False,
-                    num_trainable_layers=NUM_TRAINABLE_LAYERS)
+                    num_trainable_layers=NUM_TRAINABLE_LAYERS,
+                    metrics=['mae'])
 
-    OPTIMIZER = SGD(lr=1e-4)
+    print('Chest dataset (final): val_mean_absolute_error: ', history.history['val_mean_absolute_error'][-1])
+    # OPTIMIZER = SGD(lr=1e-4)
 
-    history = train(train_gen_boneage, val_gen_boneage, steps_per_epoch_boneage, validation_steps_boneage, model,
-                    OPTIMIZER, LOSS, LEARNING_RATE, NUM_EPOCHS, finetuning=True,
-                    num_trainable_layers=NUM_TRAINABLE_LAYERS)
+    history = train(train_gen_boneage, val_gen_boneage, steps_per_epoch_boneage,
+                    validation_steps_boneage, model,
+                    OPTIMIZER, LOSS, LEARNING_RATE, NUM_EPOCHS,
+                    finetuning=True,
+                    num_trainable_layers=NUM_TRAINABLE_LAYERS,
+                    metrics=['mae'])
 
     print('Boneage dataset (final): val_mean_absolute_error: ', history.history['val_mean_absolute_error'][-1])
 
 
 if __name__ == '__main__':
-    DISEASE_ENABLED = True
-    AGE_ENABLED = True
-    execute()
+    # DISEASE_ENABLED = True
+    # AGE_ENABLED = True
+    # execute()
     DISEASE_ENABLED = True
     AGE_ENABLED = False
     execute()
-    DISEASE_ENABLED = False
-    AGE_ENABLED = True
-    execute()
+    # DISEASE_ENABLED = False
+    # AGE_ENABLED = True
+    # execute()
