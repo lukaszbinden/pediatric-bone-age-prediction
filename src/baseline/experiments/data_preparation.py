@@ -50,8 +50,8 @@ def get_gen(train_idg,
         val_df = get_boneage_dataframe('boneage-validation-dataset', 'Image ID', classification)
         do_train_val_split = False
         class_str_col = class_str_col_boneage
-        if predicted_class_col is not None:
-            class_str_col = predicted_class_col
+        #if predicted_class_col is not None:
+        #    class_str_col = predicted_class_col
         gender_str_col = gender_str_col_boneage
         if disease_enabled:
             print('Please enable disease only in chest dataset!')
@@ -59,14 +59,14 @@ def get_gen(train_idg,
     elif dataset == 'chest':
         df = get_chest_dataframe(False, classification)
         class_str_col = class_str_col_chest
-        if predicted_class_col is not None:
-            class_str_col = predicted_class_col
+        #if predicted_class_col is not None:
+        #    class_str_col = predicted_class_col
         gender_str_col = gender_str_col_chest
     elif dataset == 'chest_boneage_range':
         df = get_chest_dataframe(True, classification)
         class_str_col = class_str_col_chest
-        if predicted_class_col is not None:
-            class_str_col = predicted_class_col
+        #if predicted_class_col is not None:
+        #    class_str_col = predicted_class_col
         gender_str_col = gender_str_col_chest
     else:
         print('Please specify valid dataset name!')
