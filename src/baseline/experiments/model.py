@@ -27,9 +27,10 @@ def get_model(model, gender_input_enabled,
     conv_base = get_conv_base(input_img, model, pretrained)
 
     inputs = [input_img]
+
+    input_gender = Input(shape=(1,), name='input_gender')
+    inputs.append(input_gender)
     if gender_input_enabled:
-        input_gender = Input(shape=(1,), name='input_gender')
-        inputs.append(input_gender)
         feature = concatenate([conv_base, get_gender(input_gender)], axis=1)
     else:
         feature = conv_base
