@@ -114,7 +114,7 @@ def combined_generators(image_generator,
         disease_generator = cycle(batch(disease, batch_size))
     while True:
         nextImage = next(image_generator)
-        nextGender = next(gender_generator)
+        nextGender = np.stack(next(gender_generator).values)
         assert len(nextImage[0]) == len(nextGender)
         if age_enabled and disease_enabled:
             nextDisease = next(disease_generator)
@@ -125,7 +125,7 @@ def combined_generators(image_generator,
         elif disease_enabled:
             nextDisease = next(disease_generator)
             assert len(nextImage[0]) == len(nextDisease)
-            yield [nextImage[0], np.stack(nextGender.values)], np.stack(nextDisease.values)
+            yield [nextImage[0], nextGender], np.stack(nextDisease.values)
 
 
 def batch(iterable, n=1):
