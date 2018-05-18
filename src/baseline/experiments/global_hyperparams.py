@@ -3,7 +3,7 @@
 # the same values to enable a uniform
 # training setup and eventually a
 # fair performance comparison.
-from keras.optimizers import Adam
+from keras.optimizers import Adam,SGD
 
 NUM_EPOCHS = 2 
 IMG_SIZE = (299, 299)
