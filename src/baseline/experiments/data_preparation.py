@@ -185,16 +185,16 @@ def get_chest_dataframe(only_boneage_range, classification=False):
     chest_df[gender_str_col_chest] = chest_df[gender_str_col_chest].map(
         lambda x: np.array([1]) if x == 'M' else np.array([0]))  # map 'M' and 'F' values to 1 and 0
 
-    chest_df[disease_str_col] = [np.array([1 if disease in x else 0 for disease in diseases]) for x in chest_df[
+    # disease in -> for multi-class; x == disease -> for single-class
+    chest_df[disease_str_col] = [np.array([1 if x == disease else 0 for disease in diseases]) for x in chest_df[
         disease_str_col]]  # convert diseases string into sparse binary vector for classification
 
-    # chest_df[disease_str_col] = chest_df.drop(chest_df[chest_df[disease_str_col] == np.array(
-    #    [0] * 14)].index)  # delete all rows with zero entries (no disease)
-
-    # print(chest_df[disease_str_col])
+    # delete all rows with zero entries (no disease)
+    chest_df = chest_df.drop(chest_df[chest_df[disease_str_col].map(
+        lambda x: np.array_equal(x, np.array([0] * 14)))].index)
 
     if only_boneage_range:
-        chest_df[class_str_col_chest] = chest_df.drop(chest_df[chest_df[class_str_col_chest] < 12 * 20].index)
+        chest_df = chest_df.drop(chest_df[chest_df[class_str_col_chest].map(lambda x: x > 12 * 20)].index)
 
     classes = [0] * (12 * 20)  # 240 = 12 * 20 classes
     if classification:
