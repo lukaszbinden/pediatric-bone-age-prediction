@@ -62,7 +62,7 @@ def execute():
                     num_trainable_layers=NUM_TRAINABLE_LAYERS,
                     metrics=['accuracy'])
 
-    print('Chest dataset (final): val_mean_absolute_error: ', history.history['val_mean_absolute_error'][-1])
+    print('Chest dataset (final): history: ', history)
 
     if DISEASE_ENABLED and not AGE_ENABLED:
         # now build new model for age prediction
