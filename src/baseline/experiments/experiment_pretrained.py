@@ -33,7 +33,7 @@ def execute():
                                                                                                     'boneage',
                                                                                                     disease_enabled=False)
 
-    model = get_model(model='winner', gender_input_enabled=False, age_output_enabled=False,
+    model = get_model(model='winner', gender_input_enabled=False, age_output_enabled=True,
                       disease_enabled=False,
                       pretrained=PRETRAINED)
 
