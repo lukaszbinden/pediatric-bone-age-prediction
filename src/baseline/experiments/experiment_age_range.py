@@ -37,7 +37,7 @@ def execute():
                                                                                                     'boneage',
                                                                                                     disease_enabled=False)
 
-    model = get_model(model='winner', gender_input_enabled=True, age_output_enabled=False, disease_enabled=False,
+    model = get_model(model='winner', gender_input_enabled=False, age_output_enabled=True, disease_enabled=False,
                       pretrained='imagenet')
 
     OPTIMIZER = Adam(lr=1e-3)
@@ -54,7 +54,7 @@ def execute():
                     OPTIMIZER, LOSS, LEARNING_RATE, NUM_EPOCHS, finetuning=True,
                     num_trainable_layers=NUM_TRAINABLE_LAYERS)
 
-    print('Boneage dataset (final): val_mean_absolute_error: ', history.history['val_mean_absolute_error'][-1])
+    print('Boneage dataset (final) history:', history)
 
 
 if __name__ == '__main__':

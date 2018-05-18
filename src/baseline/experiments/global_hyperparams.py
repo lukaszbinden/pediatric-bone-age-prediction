@@ -5,7 +5,7 @@
 # fair performance comparison.
 from keras.optimizers import Adam
 
-NUM_EPOCHS = 5
+NUM_EPOCHS = 2 
 IMG_SIZE = (299, 299)
 METRIC = ['mae']
 LOSS_DEFAULT = 'mae'
