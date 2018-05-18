@@ -9,7 +9,7 @@ def get_model(model, gender_input_enabled,
               age_output_enabled,
               disease_enabled,
               pretrained='imagenet',
-              age_prediction='regression'):
+              classification=False):
     """
 
     :param model: 'baseline', 'own' or 'winner
@@ -17,19 +17,18 @@ def get_model(model, gender_input_enabled,
     :param age_output_enabled: True or False
     :param disease_enabled: True or False
     :param pretrained: 'imagenet' or None
-    :param age_prediction: 'regression' or 'classification'
+    :param classification: True (do classification) or False (do regression)
     :return:
     """
     assert age_output_enabled or disease_enabled
 
     input_img = Input(shape=(299, 299, 3), name='input_img')
+    input_gender = Input(shape=(1,), name='input_gender')
+    inputs = [input_img, input_gender]
 
     conv_base = get_conv_base(input_img, model, pretrained)
 
-    inputs = [input_img]
 
-    input_gender = Input(shape=(1,), name='input_gender')
-    inputs.append(input_gender)
     if gender_input_enabled:
         feature = concatenate([conv_base, get_gender(input_gender)], axis=1)
     else:
