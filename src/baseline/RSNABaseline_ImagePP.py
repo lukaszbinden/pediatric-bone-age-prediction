@@ -27,7 +27,7 @@ from skimage.exposure import equalize_hist, equalize_adapthist
 import ImageSelector as imgsel
 
  
-dir_path = os.path.dirname(os.path.realpath(__file__))
+dir_path = os.getcwd()
 
 if dir_path[1]=='h':
     server = False
@@ -83,8 +83,8 @@ def prepro(x):
         #img = rescale_intensity(img)  
         #img = equalize_hist(img)
         
-        img = equalize_adapthist(img)
         #plotimghist(img)
+        img = equalize_adapthist(img)
         #plotimghist(img)
         x[:,:,i] = img
     return x
