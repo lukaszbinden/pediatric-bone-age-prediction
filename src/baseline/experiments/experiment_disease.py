@@ -18,7 +18,8 @@ DISEASE_STR_COL = 'Finding Labels'
 
 def execute():
     """
-    Chest XRays validate against disease and patient age respectively
+    Experiment difference if chest X-rays are validated against disease or patient age
+    or both
     :return:
     """
     train_idg = ImageDataGenerator(rotation_range=20, width_shift_range=0.2, height_shift_range=0.2,
