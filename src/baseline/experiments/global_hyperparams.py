@@ -3,9 +3,9 @@
 # the same values to enable a uniform
 # training setup and eventually a
 # fair performance comparison.
-from keras.optimizers import Adam,SGD
+from keras.optimizers import Adam, SGD
 
-NUM_EPOCHS = 2 
+NUM_EPOCHS = 2
 IMG_SIZE = (299, 299)
 METRIC = ['mae']
 LOSS_DEFAULT = 'mae'

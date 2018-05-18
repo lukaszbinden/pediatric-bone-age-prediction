@@ -34,7 +34,7 @@ def execute():
                                                                                             'chest',
                                                                                             age_enabled=AGE_ENABLED,
                                                                                             disease_enabled=DISEASE_ENABLED)
-                                                                                            #predicted_class_col=CHEST_CLASS_STR_COL)
+    # predicted_class_col=CHEST_CLASS_STR_COL)
     train_gen_boneage, val_gen_boneage, steps_per_epoch_boneage, validation_steps_boneage = get_gen(train_idg, val_idg,
                                                                                                     hp.IMG_SIZE,
                                                                                                     BATCH_SIZE_TRAIN,
@@ -101,14 +101,14 @@ def execute():
 
 
 if __name__ == '__main__':
-    DISEASE_ENABLED = True
-    AGE_ENABLED = True
-    execute()
-    #CHEST_CLASS_STR_COL = 'Finding Labels'
+    # DISEASE_ENABLED = True
+    # AGE_ENABLED = True
+    # execute()
+    # CHEST_CLASS_STR_COL = 'Finding Labels'
     DISEASE_ENABLED = True
     AGE_ENABLED = False
     execute()
-    #CHEST_CLASS_STR_COL = 'Patient Age'
+    # CHEST_CLASS_STR_COL = 'Patient Age'
     DISEASE_ENABLED = False
     AGE_ENABLED = True
     execute()
