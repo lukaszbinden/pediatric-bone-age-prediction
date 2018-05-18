@@ -48,15 +48,15 @@ def execute():
                     finetuning=False,
                     num_trainable_layers=NUM_TRAINABLE_LAYERS)
 
-    print('Chest dataset (final) history:', history)
+    print('Chest dataset (final) history:', history, 'NUM_TRAINABLE_LAYERS:', NUM_TRAINABLE_LAYERS)
 
-    OPTIMIZER = SGD(lr=1e-4)
+    OPTIMIZER = hp.OPTIMIZER_FINETUNING # works better for finetuning
 
     history = train(train_gen_boneage, val_gen_boneage, steps_per_epoch_boneage, validation_steps_boneage, model,
                     OPTIMIZER, LOSS, LEARNING_RATE, NUM_EPOCHS, finetuning=True,
                     num_trainable_layers=NUM_TRAINABLE_LAYERS)
 
-    print('Boneage dataset (final) history:', history)
+    print('Boneage dataset (final) history:', history, 'NUM_TRAINABLE_LAYERS:', NUM_TRAINABLE_LAYERS)
 
 
 if __name__ == '__main__':

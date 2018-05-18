@@ -85,7 +85,7 @@ def execute():
     elif AGE_ENABLED and not DISEASE_ENABLED:
         boneage_model = chest_model
 
-    OPTIMIZER = Adam(lr=LEARNING_RATE, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0)
+    OPTIMIZER = hp.OPTIMIZER_FINETUNING
     LOSS = 'mae'
     history = train(train_gen_boneage, val_gen_boneage, steps_per_epoch_boneage,
                     validation_steps_boneage, boneage_model,
