@@ -38,9 +38,9 @@ def get_model(model, gender_input_enabled,
 
     outputs = []
     if age_output_enabled:
-        if age_prediction == 'regression':
+        if not classification:
             output_age = Dense(1, name='output_age')(classifier)
-        elif age_prediction == 'classification':
+        elif classification:
             # output_age = Dense(1200, name='output_age')(classifier) # number of classes: 1200 = 100 years * 12 Months
             output_age = Dense(240, name='output_age')(classifier)  # number of classes: 240 = 20 years * 12 Months
         else:
