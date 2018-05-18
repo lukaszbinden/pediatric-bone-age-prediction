@@ -26,15 +26,14 @@ from skimage.exposure import equalize_hist, equalize_adapthist
 
 import ImageSelector as imgsel
 
-server = False
+ 
+dir_path = os.path.dirname(os.path.realpath(__file__))
 
-
-
-#/home/guy/jmcs-atml-bone-age-prediction/datasets
-#/var/tmp/studi5/boneage/datasets/boneage/
-if server == False:
+if dir_path[1]=='h':
+    server = False
     base_bone_dir = '/home/guy/jmcs-atml-bone-age-prediction/datasets/'
 else:
+    server = True
     base_bone_dir = '/var/tmp/studi5/boneage/datasets/boneage/'
     
 age_df = pd.read_csv(os.path.join(base_bone_dir, 'boneage-training-dataset.csv'))  # read csv
@@ -66,25 +65,28 @@ def plotimghist(img):
     plt.imshow(img, cmap='gray')
     plt.show()
     plt.hist(img.flatten(), bins=np.arange(np.min(img),np.max(img),((np.max(img)-np.min(img))/100)))
+    plt.xlabel('Pixel Intensity')
+    plt.ylabel('# of pixels')
     plt.show()
 
 def prepro(x):
     
     # ----------------------------------------------------
-    # IF ACCURACY PREDICTION IS NOT GOOD ENOUGHT -> REMOVE
+    # IMAGE PREPROCESSING
     # -----------------------------------------------------
-  
-    #for i in range(x.shape[2]):
-        #img = x[:,:,2]
+   
+    for i in range(x.shape[2]):
+        img = x[:,:,i]
         #plotimghist(img)
-        #img = (img-(np.min(img)))/np.max(img)
+        img = (img-(np.min(img)))/np.max(img)
         #img = img+(0.5-np.mean(img))
         #img = rescale_intensity(img)  
-        #img = equalize_hist(img)$
-        #img = equalize_adapthist(img)
-        #if i==0:
-        #    plotimghist(img)
-        #x[:,:,i] = img
+        #img = equalize_hist(img)
+        
+        img = equalize_adapthist(img)
+        #plotimghist(img)
+        #plotimghist(img)
+        x[:,:,i] = img
     return x
 
 def on_epoch_end_(epoch, logs):
@@ -124,7 +126,7 @@ core_idg = ImageDataGenerator(#featurewise_center = True/False
                               horizontal_flip=True,
                               vertical_flip=False,
                               #rescale = 
-                              #preprocessing_function=prepro,
+                              preprocessing_function=prepro,
                               #data_format = 
                               #validation_split
                               height_shift_range=0.15
