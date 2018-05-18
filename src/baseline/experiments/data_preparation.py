@@ -8,7 +8,7 @@ from sklearn.model_selection import train_test_split
 
 base_dir = '/var/tmp/studi5/boneage/'
 base_datasets_dir = base_dir + 'datasets/'
-chest_dataset_dir = base_datasets_dir + 'nih-chest-xrays/'  # 'nih-chest-xrays-full/'
+chest_dataset_dir = base_datasets_dir + 'nih-chest-xrays-full/'
 boneage_dataset_dir = base_datasets_dir + 'boneage/'
 
 class_str_col_boneage = 'boneage'
@@ -28,7 +28,8 @@ def get_gen(train_idg,
             dataset='boneage',
             age_enabled=True,
             disease_enabled=True,
-            predicted_class_col=None):
+            predicted_class_col=None,
+            classification=False):
     """
     :param train_idg:
     :param val_idg:
@@ -39,13 +40,14 @@ def get_gen(train_idg,
     :param age_enabled: True or False
     :param disease_enabled: True or False
     :param predicted_class_col: the class to predict, or None to use default
+    :param classification: True (do classification) or False (do regression)
     :return:
     """
     assert age_enabled or disease_enabled
     do_train_val_split = True
     if dataset == 'boneage':
-        train_df = get_boneage_dataframe('boneage-training-dataset', 'id')
-        val_df = get_boneage_dataframe('boneage-validation-dataset', 'Image ID')
+        train_df = get_boneage_dataframe('boneage-training-dataset', 'id', classification)
+        val_df = get_boneage_dataframe('boneage-validation-dataset', 'Image ID', classification)
         do_train_val_split = False
         class_str_col = class_str_col_boneage
         if predicted_class_col is not None:
@@ -55,13 +57,13 @@ def get_gen(train_idg,
             print('Please enable disease only in chest dataset!')
             disease_enabled = False
     elif dataset == 'chest':
-        df = get_chest_dataframe(False)
+        df = get_chest_dataframe(False, classification)
         class_str_col = class_str_col_chest
         if predicted_class_col is not None:
             class_str_col = predicted_class_col
         gender_str_col = gender_str_col_chest
     elif dataset == 'chest_boneage_range':
-        df = get_chest_dataframe(True)
+        df = get_chest_dataframe(True, classification)
         class_str_col = class_str_col_chest
         if predicted_class_col is not None:
             class_str_col = predicted_class_col
@@ -163,7 +165,7 @@ def flow_from_dataframe(img_data_gen, in_df, path_col, y_col, **dflow_args):
     return df_gen
 
 
-def get_chest_dataframe(only_boneage_range):
+def get_chest_dataframe(only_boneage_range, classification=False):
     img_dir = 'images'
     csv_name = 'sample_labels.csv'
     image_index_col = 'Image Index'
@@ -194,10 +196,16 @@ def get_chest_dataframe(only_boneage_range):
     if only_boneage_range:
         chest_df[class_str_col_chest] = chest_df.drop(chest_df[chest_df[class_str_col_chest] < 12 * 20].index)
 
+    classes = [0] * (12 * 20)  # 240 = 12 * 20 classes
+    if classification:
+        # convert age integer in months into sparse binary vector for classification
+        chest_df[class_str_col_chest] = [np.array([1 if index == x else 0 for index, clazz in enumerate(classes)])
+                                         for x in chest_df[class_str_col_chest]]
+
     return chest_df
 
 
-def get_boneage_dataframe(dataset_name, image_index_col):
+def get_boneage_dataframe(dataset_name, image_index_col, classification=False):
     csv_name = dataset_name + '.csv'
     img_dir = dataset_name
 
@@ -208,5 +216,11 @@ def get_boneage_dataframe(dataset_name, image_index_col):
     print('boneage', boneage_df['exists'].sum(), 'images found of', boneage_df.shape[0], 'total')
     boneage_df[gender_str_col_boneage] = boneage_df[gender_str_col_boneage].map(
         lambda x: np.array([1]) if x else np.array([0]))  # map boolean values to 1 and 0
+
+    classes = [0] * (12 * 20)  # 240 = 12 * 20 classes
+    if classification:
+        # convert age integer in months into sparse binary vector for classification
+        boneage_df[class_str_col_boneage] = [np.array([1 if index == x else 0 for index, clazz in enumerate(classes)])
+                                             for x in boneage_df[class_str_col_boneage]]
 
     return boneage_df

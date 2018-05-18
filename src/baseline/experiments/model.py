@@ -8,7 +8,8 @@ import numpy as np
 def get_model(model, gender_input_enabled,
               age_output_enabled,
               disease_enabled,
-              pretrained='imagenet'):
+              pretrained='imagenet',
+              age_prediction='regression'):
     """
 
     :param model: 'baseline', 'own' or 'winner
@@ -16,6 +17,7 @@ def get_model(model, gender_input_enabled,
     :param age_output_enabled: True or False
     :param disease_enabled: True or False
     :param pretrained: 'imagenet' or None
+    :param age_prediction: 'regression' or 'classification'
     :return:
     """
     assert age_output_enabled or disease_enabled
@@ -36,7 +38,13 @@ def get_model(model, gender_input_enabled,
 
     outputs = []
     if age_output_enabled:
-        output_age = Dense(1, name='output_age')(classifier)
+        if age_prediction == 'regression':
+            output_age = Dense(1, name='output_age')(classifier)
+        elif age_prediction == 'classification':
+            # output_age = Dense(1200, name='output_age')(classifier) # number of classes: 1200 = 100 years * 12 Months
+            output_age = Dense(240, name='output_age')(classifier)  # number of classes: 240 = 20 years * 12 Months
+        else:
+            print('Please enter a valid value for the parameter age_prediction!')
         outputs = [output_age]
 
     if disease_enabled:

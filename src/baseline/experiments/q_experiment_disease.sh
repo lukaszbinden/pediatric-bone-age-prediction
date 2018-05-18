@@ -18,4 +18,4 @@
 #$ -m ea
 #$ -M joel.niklaus@students.unibe.ch,lukas.zbinden@unifr.ch
 
-python experiment_disease.py
+python experiments/experiment_disease.py
