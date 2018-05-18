@@ -196,8 +196,8 @@ def get_chest_dataframe(only_boneage_range, classification=False):
     if only_boneage_range:
         chest_df = chest_df.drop(chest_df[chest_df[class_str_col_chest].map(lambda x: x > 12 * 20)].index)
 
-    classes = [0] * (12 * 20)  # 240 = 12 * 20 classes
     if classification:
+        classes = [0] * (12 * 20)  # 240 = 12 * 20 classes
         # convert age integer in months into sparse binary vector for classification
         chest_df[class_str_col_chest] = [np.array([1 if index == x else 0 for index, clazz in enumerate(classes)])
                                          for x in chest_df[class_str_col_chest]]

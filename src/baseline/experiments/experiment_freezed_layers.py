@@ -50,7 +50,7 @@ def execute():
 
     print('Chest dataset (final) history:', history, 'NUM_TRAINABLE_LAYERS:', NUM_TRAINABLE_LAYERS)
 
-    OPTIMIZER = hp.OPTIMIZER_FINETUNING # works better for finetuning
+    OPTIMIZER = hp.OPTIMIZER_FINETUNING  # works better for finetuning
 
     history = train(train_gen_boneage, val_gen_boneage, steps_per_epoch_boneage, validation_steps_boneage, model,
                     OPTIMIZER, LOSS, LEARNING_RATE, NUM_EPOCHS, finetuning=True,
