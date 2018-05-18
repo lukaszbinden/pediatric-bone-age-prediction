@@ -34,7 +34,8 @@ def execute():
                                                                                                     IMG_SIZE,
                                                                                                     BATCH_SIZE_TRAIN,
                                                                                                     BATCH_SIZE_VAL,
-                                                                                                    'boneage', disease_enabled=False)
+                                                                                                    'boneage',
+                                                                                                    disease_enabled=False)
 
     model = get_model(model='winner', gender_input_enabled=True, age_output_enabled=True, disease_enabled=False,
                       pretrained='imagenet')
@@ -47,13 +48,16 @@ def execute():
                     finetuning=False,
                     num_trainable_layers=NUM_TRAINABLE_LAYERS)
 
+    print('Chest dataset (final) history:', history)
+
     OPTIMIZER = SGD(lr=1e-4)
 
     history = train(train_gen_boneage, val_gen_boneage, steps_per_epoch_boneage, validation_steps_boneage, model,
                     OPTIMIZER, LOSS, LEARNING_RATE, NUM_EPOCHS, finetuning=True,
                     num_trainable_layers=NUM_TRAINABLE_LAYERS)
 
-    print('Boneage dataset (final): val_mean_absolute_error: ', history.history['val_mean_absolute_error'][-1])
+    print('Boneage dataset (final) history:', history)
+
 
 if __name__ == '__main__':
     for num_trainable_layers in range(10, 100, 10):

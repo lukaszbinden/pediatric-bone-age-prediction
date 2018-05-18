@@ -28,7 +28,8 @@ def execute():
     val_idg = ImageDataGenerator(width_shift_range=0.25, height_shift_range=0.25, horizontal_flip=True)
 
     train_gen_chest, val_gen_chest, steps_per_epoch_chest, validation_steps_chest = get_gen(train_idg, val_idg,
-                                                                                            hp.IMG_SIZE, BATCH_SIZE_TRAIN,
+                                                                                            hp.IMG_SIZE,
+                                                                                            BATCH_SIZE_TRAIN,
                                                                                             BATCH_SIZE_VAL,
                                                                                             'chest',
                                                                                             age_enabled=AGE_ENABLED,
@@ -63,7 +64,7 @@ def execute():
                     num_trainable_layers=NUM_TRAINABLE_LAYERS,
                     metrics=['accuracy'])
 
-    print('Chest dataset (final): history: ', history)
+    print('Chest dataset (final) history:', history)
 
     if DISEASE_ENABLED and not AGE_ENABLED:
         # now build new model for age prediction
@@ -96,7 +97,7 @@ def execute():
                     num_trainable_layers=NUM_TRAINABLE_LAYERS,
                     metrics=hp.METRIC)
 
-    print('Boneage dataset (final): val_mean_absolute_error: ', history.history['val_mean_absolute_error'][-1])
+    print('Boneage dataset (final) history:', history)
 
 
 if __name__ == '__main__':
@@ -111,4 +112,3 @@ if __name__ == '__main__':
     DISEASE_ENABLED = False
     AGE_ENABLED = True
     execute()
-
