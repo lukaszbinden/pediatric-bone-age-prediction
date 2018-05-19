@@ -34,9 +34,11 @@ Server = False
 if Server == False:
     base_bone_dir = '/home/guy/jmcs-atml-bone-age-prediction/datasets/'
     path_var_store = '/home/guy/jmcs-atml-bone-age-prediction/variables/'
+    path_filt_dataset = '/home/guy/jmcs-atml-bone-age-prediction/Code/FilteredDataset/'
 else:
     base_bone_dir = '/var/tmp/studi5/boneage/datasets/boneage/'
     path_var_store = '/var/tmp/studi5/boneage/variables/'
+    path_filt_dataset = '/var/tmp/studi5/boneage/git/jmcs-atml-bone-age-prediction/FilteredDataset/'
 
 model_prediction_dir = 'ModelPrediction/'
 
@@ -44,9 +46,9 @@ model_prediction_dir = 'ModelPrediction/'
 #LOAD MODEL FOR PREDICTING ACCURACY
 #-----------------------------------
 
-model_accuracy = load_model(base_bone_dir + model_prediction_dir+ 'weights-03-0.55.h5')
+#model_accuracy = load_model(base_bone_dir + model_prediction_dir+ 'weights-03-0.55.h5')
     
-age_df = pd.read_csv(os.path.join(base_bone_dir, 'boneage-training-dataset.csv'))  # read csv
+age_df = pd.read_csv(os.path.join(path_filt_dataset, 'boneage-training-dataset-filtered.csv'))  # read csv
 age_df['path'] = age_df['id'].map(lambda x: os.path.join(base_bone_dir, 'boneage-training-dataset','{}.png'.format(x)))  # add path to dictionary
 
 
@@ -113,7 +115,7 @@ def on_epoch_end_(epoch, logs):
     list_png_pred = list(zip(list_png,prediction[0]))
     
     #save data
-    with open(path_var_store + 'objs2.pkl', 'wb') as f:  # Python 3: open(..., 'wb')
+    with open(path_var_store + 'objs2.pkl', 'wb') as f:  
         pickle.dump([list_png_pred], f)
 
     #if epoch ==0:
@@ -246,7 +248,7 @@ early = EarlyStopping(monitor="val_loss", mode="min", patience=5)  # probably ne
 callbacks_list = [checkpoint, early, reduceLROnPlat, lambdacall]
 
 
-
+on_epoch_end_(0,0)
 
 history = bone_age_model.fit_generator(train_gen, validation_data=(test_X, test_Y), epochs=1, callbacks=callbacks_list)
 
