@@ -80,7 +80,7 @@ def get_winner(input_img, pretrained):
 
 
 def get_own(input_img, pretrained):
-    base = InceptionResNetV2(include_top=True,
+    base = InceptionResNetV2(include_top=False,
                              weights=pretrained,
                              input_tensor=input_img,
                              # input_shape=t_x.shape[1:],
