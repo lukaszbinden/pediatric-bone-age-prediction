@@ -25,7 +25,7 @@ import pickle
 from skimage.exposure import rescale_intensity
 from skimage.exposure import equalize_hist, equalize_adapthist
 
-import ImageSelector as imgsel
+#import ImageSelector as imgsel
 
 dir_path = os.getcwd()
 if dir_path[1]=='h':
@@ -104,20 +104,20 @@ def on_epoch_end_(epoch, logs):
     
     
     #----------------Predict output on all data-------------------
-    list_data = imgsel.LoadDataList('boneage-training-dataset.csv')#need to be changed
+    #list_data = imgsel.LoadDataList('boneage-training-dataset.csv')#need to be changed
     # Reduced train list
-    train_list = dict((k, v) for k, v in list_data.items() if k > 500 and k < 1500)
+    #train_list = dict((k, v) for k, v in list_data.items() if k > 500 and k < 1500)
     #val_list = dict((k, v) for k, v in list_data.items() if k > 300 and k < 350)
     #if epoch == 0:
-    img_train, boneage_train, gender_train= imgsel.LoadData2Mem(train_list, 384)
-    img_train = imgsel.convert_gray_to_rgb(img_train)
-    prediction = bone_age_model.predict(img_train)
-    list_png = [x[1][0] for x in train_list.items()]
-    list_png_pred = list(zip(list_png,prediction[0]))
+    #img_train, boneage_train, gender_train= imgsel.LoadData2Mem(train_list, 384)
+    #img_train = imgsel.convert_gray_to_rgb(img_train)
+    #prediction = bone_age_model.predict(img_train)
+    #list_png = [x[1][0] for x in train_list.items()]
+    #list_png_pred = list(zip(list_png,prediction[0]))
     
     #save data
-    with open(path_var_store + 'objs2.pkl', 'wb') as f:  
-        pickle.dump([list_png_pred], f)
+    #with open(path_var_store + 'objs2.pkl', 'wb') as f:  
+        #pickle.dump([list_png_pred], f)
 
     #if epoch ==0:
         # --------------------------------------------
