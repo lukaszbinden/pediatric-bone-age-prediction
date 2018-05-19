@@ -3,6 +3,8 @@ from keras.applications import InceptionV3, InceptionResNetV2, VGG16
 from keras.layers import Flatten, Dense, concatenate, AveragePooling2D, BatchNormalization, LocallyConnected2D, Conv2D, \
     multiply, GlobalAveragePooling2D, Lambda, Dropout
 import numpy as np
+from keras.utils import multi_gpu_model
+from tensorflow.python.client import device_lib
 
 
 def get_model(model, gender_input_enabled,
@@ -21,6 +23,8 @@ def get_model(model, gender_input_enabled,
     :return:
     """
     assert age_output_enabled or disease_enabled
+
+    print("NUMBER OF AVAILABLE GPUS: ", get_available_gpus())
 
     input_img = Input(shape=(299, 299, 3), name='input_img')
     input_gender = Input(shape=(1,), name='input_gender')
@@ -55,7 +59,9 @@ def get_model(model, gender_input_enabled,
 
     assert len(outputs) > 0
 
-    return Model(inputs=inputs, outputs=outputs)
+    model = Model(inputs=inputs, outputs=outputs)
+    model = multi_gpu_model(model, gpus=2)
+    return model
 
 
 def get_conv_base(input_img, model, pretrained):
@@ -139,3 +145,7 @@ def get_classifier_base(feature):
 def get_gender(input_gender):
     feature_gender = Dense(32, activation='relu')(input_gender)
     return feature_gender
+
+def get_available_gpus():
+    local_device_protos = device_lib.list_local_devices()
+    return [x.name for x in local_device_protos if x.device_type == 'GPU']
