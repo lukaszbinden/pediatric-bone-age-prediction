@@ -42,7 +42,6 @@ def train(train_gen, val_gen,
         for layer in model.layers[-num_trainable_layers:]:
             layer.trainable = True
 
-    # TODO at work diseasee....
     model.compile(optimizer=optimizer, loss=loss, metrics=metrics)  # if two outputs are defined two losses and loss_weights could be defined
 
     model.summary()  # prints the network structure

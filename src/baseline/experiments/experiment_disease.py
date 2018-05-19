@@ -33,8 +33,8 @@ def execute():
                                                                                             BATCH_SIZE_VAL,
                                                                                             'chest',
                                                                                             age_enabled=AGE_ENABLED,
-                                                                                            disease_enabled=DISEASE_ENABLED,
-                                                                                            predicted_class_col=DISEASE_CLASS_STR_COL)
+                                                                                            disease_enabled=DISEASE_ENABLED)
+    # predicted_class_col=CHEST_CLASS_STR_COL)
     train_gen_boneage, val_gen_boneage, steps_per_epoch_boneage, validation_steps_boneage = get_gen(train_idg, val_idg,
                                                                                                     hp.IMG_SIZE,
                                                                                                     BATCH_SIZE_TRAIN,
@@ -85,7 +85,7 @@ def execute():
     elif AGE_ENABLED and not DISEASE_ENABLED:
         boneage_model = chest_model
 
-    OPTIMIZER = Adam(lr=LEARNING_RATE, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0)
+    OPTIMIZER = hp.OPTIMIZER_FINETUNING
     LOSS = 'mae'
     history = train(train_gen_boneage, val_gen_boneage, steps_per_epoch_boneage,
                     validation_steps_boneage, boneage_model,
@@ -104,11 +104,11 @@ if __name__ == '__main__':
     # DISEASE_ENABLED = True
     # AGE_ENABLED = True
     # execute()
-    DISEASE_CLASS_STR_COL = 'Finding Labels'
+    # CHEST_CLASS_STR_COL = 'Finding Labels'
     DISEASE_ENABLED = True
     AGE_ENABLED = False
     execute()
-    DISEASE_CLASS_STR_COL = 'Patient Age'
+    # CHEST_CLASS_STR_COL = 'Patient Age'
     DISEASE_ENABLED = False
     AGE_ENABLED = True
     execute()

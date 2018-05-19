@@ -50,8 +50,8 @@ def get_gen(train_idg,
         val_df = get_boneage_dataframe('boneage-validation-dataset', 'Image ID', classification)
         do_train_val_split = False
         class_str_col = class_str_col_boneage
-        if predicted_class_col is not None:
-            class_str_col = predicted_class_col
+        #if predicted_class_col is not None:
+        #    class_str_col = predicted_class_col
         gender_str_col = gender_str_col_boneage
         if disease_enabled:
             print('Please enable disease only in chest dataset!')
@@ -59,14 +59,14 @@ def get_gen(train_idg,
     elif dataset == 'chest':
         df = get_chest_dataframe(False, classification)
         class_str_col = class_str_col_chest
-        if predicted_class_col is not None:
-            class_str_col = predicted_class_col
+        #if predicted_class_col is not None:
+        #    class_str_col = predicted_class_col
         gender_str_col = gender_str_col_chest
     elif dataset == 'chest_boneage_range':
         df = get_chest_dataframe(True, classification)
         class_str_col = class_str_col_chest
-        if predicted_class_col is not None:
-            class_str_col = predicted_class_col
+        #if predicted_class_col is not None:
+        #    class_str_col = predicted_class_col
         gender_str_col = gender_str_col_chest
     else:
         print('Please specify valid dataset name!')
@@ -114,7 +114,7 @@ def combined_generators(image_generator,
         disease_generator = cycle(batch(disease, batch_size))
     while True:
         nextImage = next(image_generator)
-        nextGender = next(gender_generator)
+        nextGender = np.stack(next(gender_generator).values)
         assert len(nextImage[0]) == len(nextGender)
         if age_enabled and disease_enabled:
             nextDisease = next(disease_generator)
@@ -125,7 +125,7 @@ def combined_generators(image_generator,
         elif disease_enabled:
             nextDisease = next(disease_generator)
             assert len(nextImage[0]) == len(nextDisease)
-            yield [nextImage[0], np.stack(nextGender.values)], np.stack(nextDisease.values)
+            yield [nextImage[0], nextGender], np.stack(nextDisease.values)
 
 
 def batch(iterable, n=1):
@@ -196,8 +196,8 @@ def get_chest_dataframe(only_boneage_range, classification=False):
     if only_boneage_range:
         chest_df = chest_df.drop(chest_df[chest_df[class_str_col_chest].map(lambda x: x > 12 * 20)].index)
 
-    classes = [0] * (12 * 20)  # 240 = 12 * 20 classes
     if classification:
+        classes = [0] * (12 * 20)  # 240 = 12 * 20 classes
         # convert age integer in months into sparse binary vector for classification
         chest_df[class_str_col_chest] = [np.array([1 if index == x else 0 for index, clazz in enumerate(classes)])
                                          for x in chest_df[class_str_col_chest]]
