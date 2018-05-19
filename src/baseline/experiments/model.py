@@ -24,14 +24,13 @@ def get_model(model, gender_input_enabled,
     """
     assert age_output_enabled or disease_enabled
 
-    print("NUMBER OF AVAILABLE GPUS: ", get_available_gpus())
+    # print("NUMBER OF AVAILABLE GPUS: ", get_available_gpus())
 
     input_img = Input(shape=(299, 299, 3), name='input_img')
     input_gender = Input(shape=(1,), name='input_gender')
     inputs = [input_img, input_gender]
 
     conv_base = get_conv_base(input_img, model, pretrained)
-
 
     if gender_input_enabled:
         feature = concatenate([conv_base, get_gender(input_gender)], axis=1)
@@ -60,7 +59,7 @@ def get_model(model, gender_input_enabled,
     assert len(outputs) > 0
 
     model = Model(inputs=inputs, outputs=outputs)
-    model = multi_gpu_model(model, gpus=2)
+    # model = multi_gpu_model(model, gpus=2)
     return model
 
 
@@ -145,6 +144,7 @@ def get_classifier_base(feature):
 def get_gender(input_gender):
     feature_gender = Dense(32, activation='relu')(input_gender)
     return feature_gender
+
 
 def get_available_gpus():
     local_device_protos = device_lib.list_local_devices()
