@@ -67,6 +67,7 @@ Until 15 of May !!!
 * Does including gender as input improve the result?
 * Experiment with different hyperparameters
 * Regression vs. Classification on months range between 0 and 12 * 100
+* Pretrain Kevin's baseline with NIH chest dataset (transfer learning)
 
 # Links
 * MURA dataset: https://stanfordmlgroup.github.io/projects/mura/ -> asked for early access but did not get any response
