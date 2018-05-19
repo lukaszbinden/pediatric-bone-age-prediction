@@ -25,6 +25,7 @@ from keras.callbacks import ModelCheckpoint, EarlyStopping, ReduceLROnPlateau
 from keras.optimizers import SGD, Adam
 from keras.metrics import mean_absolute_error
 from transfer_learning_common import flow_from_dataframe, get_chest_dataframe, get_boneage_dataframe
+# TODO from experiments.testing import test
 
 tstart = datetime.now()
 print('transfer_learning() --> %s' % str(tstart))
@@ -253,7 +254,7 @@ print('==================================================')
 print('================ Evaluating Model ================')
 print('==================================================')
 
-# TODO (however, the test set does not have the age provided!)
+# TODO test(model)
 
 tend = datetime.now()
 print('current time: %s' % str(datetime.now()))

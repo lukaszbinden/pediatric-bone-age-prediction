@@ -1,10 +1,11 @@
 from data_preparation import get_gen
 from model import get_model
 from training import train
+from testing import test
 import global_hyperparams as hp
 
 from keras.optimizers import Adam, SGD
-from keras.preprocessing.image import ImageDataGenerator
+from keras.preprocessing.image import ImageDataGenerator, array_to_img, img_to_array, load_img
 
 # Hyperparameters
 LEARNING_RATE = 0.001
@@ -33,8 +34,8 @@ def execute():
                                                                                             BATCH_SIZE_VAL,
                                                                                             'chest',
                                                                                             age_enabled=AGE_ENABLED,
-                                                                                            disease_enabled=DISEASE_ENABLED)
-    # predicted_class_col=CHEST_CLASS_STR_COL)
+                                                                                            disease_enabled=DISEASE_ENABLED,
+                                                                                            predicted_class_col=DISEASE_CLASS_STR_COL)
     train_gen_boneage, val_gen_boneage, steps_per_epoch_boneage, validation_steps_boneage = get_gen(train_idg, val_idg,
                                                                                                     hp.IMG_SIZE,
                                                                                                     BATCH_SIZE_TRAIN,
@@ -64,7 +65,7 @@ def execute():
                     num_trainable_layers=NUM_TRAINABLE_LAYERS,
                     metrics=['accuracy'])
 
-    print('Chest dataset (final) history:', history)
+    print('Chest dataset (final) history:', history.history)
 
     if DISEASE_ENABLED and not AGE_ENABLED:
         # now build new model for age prediction
@@ -97,18 +98,20 @@ def execute():
                     num_trainable_layers=NUM_TRAINABLE_LAYERS,
                     metrics=hp.METRIC)
 
-    print('Boneage dataset (final) history:', history)
+    print('Boneage dataset (final) history:', history.history)
+
+    test(boneage_model)
 
 
 if __name__ == '__main__':
     # DISEASE_ENABLED = True
     # AGE_ENABLED = True
     # execute()
-    # CHEST_CLASS_STR_COL = 'Finding Labels'
+    DISEASE_CLASS_STR_COL = 'Finding Labels'
     DISEASE_ENABLED = True
     AGE_ENABLED = False
     execute()
-    # CHEST_CLASS_STR_COL = 'Patient Age'
+    DISEASE_CLASS_STR_COL = 'Patient Age'
     DISEASE_ENABLED = False
     AGE_ENABLED = True
     execute()

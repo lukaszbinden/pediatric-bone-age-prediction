@@ -1,6 +1,7 @@
 from data_preparation import get_gen
 from model import get_model
 from training import train
+from testing import test
 from keras.optimizers import Adam, SGD
 from keras.preprocessing.image import ImageDataGenerator
 
@@ -45,6 +46,7 @@ def execute():
 
     print('Boneage dataset (final) history:', history)
 
+    test(model)
 
 if __name__ == '__main__':
     GENDER_ENABLED = True

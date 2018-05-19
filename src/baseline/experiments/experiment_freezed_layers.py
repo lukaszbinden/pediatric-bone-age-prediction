@@ -1,6 +1,7 @@
 from data_preparation import get_gen
 from model import get_model
 from training import train
+from testing import test
 from keras.optimizers import Adam, SGD
 from keras.preprocessing.image import ImageDataGenerator
 
@@ -58,6 +59,7 @@ def execute():
 
     print('Boneage dataset (final) history:', history, 'NUM_TRAINABLE_LAYERS:', NUM_TRAINABLE_LAYERS)
 
+    test(model)
 
 if __name__ == '__main__':
     for num_trainable_layers in range(10, 100, 10):

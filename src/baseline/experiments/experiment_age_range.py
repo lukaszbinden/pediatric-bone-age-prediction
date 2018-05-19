@@ -1,6 +1,7 @@
 from data_preparation import get_gen
 from model import get_model
 from training import train
+from testing import test
 from keras.optimizers import Adam, SGD
 from keras.preprocessing.image import ImageDataGenerator
 
@@ -54,8 +55,9 @@ def execute():
                     OPTIMIZER, LOSS, LEARNING_RATE, NUM_EPOCHS, finetuning=True,
                     num_trainable_layers=NUM_TRAINABLE_LAYERS)
 
-    print('Boneage dataset (final) history:', history)
+    print('Boneage dataset (final) history:', history.history)
 
+    test(model)
 
 if __name__ == '__main__':
     DATASET = 'chest_boneage_range'
