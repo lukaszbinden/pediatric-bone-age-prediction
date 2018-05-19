@@ -27,18 +27,19 @@ from skimage.exposure import equalize_hist, equalize_adapthist
 
 import ImageSelector as imgsel
 
-Server = False
-
-#/home/guy/jmcs-atml-bone-age-prediction/datasets
-#/var/tmp/studi5/boneage/datasets/boneage/
-if Server == False:
+dir_path = os.getcwd()
+if dir_path[1]=='h':
+    Server = False
     base_bone_dir = '/home/guy/jmcs-atml-bone-age-prediction/datasets/'
     path_var_store = '/home/guy/jmcs-atml-bone-age-prediction/variables/'
     path_filt_dataset = '/home/guy/jmcs-atml-bone-age-prediction/Code/FilteredDataset/'
 else:
+    Server = True
     base_bone_dir = '/var/tmp/studi5/boneage/datasets/boneage/'
     path_var_store = '/var/tmp/studi5/boneage/variables/'
     path_filt_dataset = '/var/tmp/studi5/boneage/git/jmcs-atml-bone-age-prediction/FilteredDataset/'
+
+
 
 model_prediction_dir = 'ModelPrediction/'
 
