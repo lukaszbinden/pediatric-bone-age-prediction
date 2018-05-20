@@ -44,7 +44,7 @@ def execute():
                     OPTIMIZER, LOSS, LEARNING_RATE, NUM_EPOCHS, finetuning=False,
                     num_trainable_layers=NUM_TRAINABLE_LAYERS)
 
-    print('Boneage dataset (final) history:', history)
+    print('Boneage dataset (final) history:', history.history)
 
     test(model)
 

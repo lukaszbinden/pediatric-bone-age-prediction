@@ -49,7 +49,7 @@ def execute():
                     finetuning=False,
                     num_trainable_layers=NUM_TRAINABLE_LAYERS)
 
-    print('Chest dataset (final) history:', history, 'NUM_TRAINABLE_LAYERS:', NUM_TRAINABLE_LAYERS)
+    print('Chest dataset (final) history:', history.history, 'NUM_TRAINABLE_LAYERS:', NUM_TRAINABLE_LAYERS)
 
     OPTIMIZER = hp.OPTIMIZER_FINETUNING  # works better for finetuning
 
@@ -57,7 +57,7 @@ def execute():
                     OPTIMIZER, LOSS, LEARNING_RATE, NUM_EPOCHS, finetuning=True,
                     num_trainable_layers=NUM_TRAINABLE_LAYERS)
 
-    print('Boneage dataset (final) history:', history, 'NUM_TRAINABLE_LAYERS:', NUM_TRAINABLE_LAYERS)
+    print('Boneage dataset (final) history:', history.history, 'NUM_TRAINABLE_LAYERS:', NUM_TRAINABLE_LAYERS)
 
     test(model)
 
