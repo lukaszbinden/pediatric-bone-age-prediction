@@ -2,7 +2,8 @@ from data_preparation import get_gen
 from keras import backend
 from model import get_model
 from training import train
-from testing import test_w_classification
+from testing import test, test_w_classification
+import global_hyperparams as hp
 from keras.optimizers import Adam, SGD
 from keras.preprocessing.image import ImageDataGenerator
 
@@ -57,6 +58,8 @@ def execute():
 
 if __name__ == '__main__':
     CLASSIFICATION = True
+    LOSS = hp.LOSS_CLASSIFICATION
     execute()
     CLASSIFICATION = False
+    LOSS = hp.LOSS_DEFAULT
     execute()

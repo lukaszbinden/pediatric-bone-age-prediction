@@ -54,7 +54,7 @@ def execute():
     # OPTIMIZER = Adam(lr=1e-3)
     if DISEASE_ENABLED and not AGE_ENABLED:
         OPTIMIZER = SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
-        LOSS = 'binary_crossentropy'
+        LOSS = hp.LOSS_CLASSIFICATION
     elif AGE_ENABLED and not DISEASE_ENABLED:
         OPTIMIZER = hp.OPTIMIZER_ADAM_DEFAULT
         LOSS = hp.LOSS_DEFAULT
