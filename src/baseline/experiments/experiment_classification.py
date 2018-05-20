@@ -44,7 +44,7 @@ def execute():
 
     history = train(train_gen_boneage, val_gen_boneage, steps_per_epoch_boneage, validation_steps_boneage, model,
                     OPTIMIZER, LOSS, LEARNING_RATE, NUM_EPOCHS, finetuning=False,
-                    num_trainable_layers=NUM_TRAINABLE_LAYERS)
+                    num_trainable_layers=NUM_TRAINABLE_LAYERS, metrics=METRICS)
 
     print('Boneage dataset (final) history:', history.history)
 
@@ -58,8 +58,10 @@ def execute():
 
 if __name__ == '__main__':
     CLASSIFICATION = True
+    METRICS = 'acc'
     LOSS = hp.LOSS_CLASSIFICATION
     execute()
     CLASSIFICATION = False
+    METRICS = 'mae'
     LOSS = hp.LOSS_DEFAULT
     execute()
