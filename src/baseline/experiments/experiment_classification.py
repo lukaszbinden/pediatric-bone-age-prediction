@@ -58,10 +58,10 @@ def execute():
 
 if __name__ == '__main__':
     CLASSIFICATION = True
-    METRICS = 'acc'
+    METRICS = ['acc']
     LOSS = hp.LOSS_CLASSIFICATION
     execute()
     CLASSIFICATION = False
-    METRICS = 'mae'
+    METRICS = ['mae']
     LOSS = hp.LOSS_DEFAULT
     execute()
