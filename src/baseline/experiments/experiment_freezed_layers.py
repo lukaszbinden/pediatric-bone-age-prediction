@@ -1,3 +1,5 @@
+import sys
+
 from data_preparation import get_gen
 from model import get_model
 from training import train
@@ -65,3 +67,4 @@ if __name__ == '__main__':
     for num_trainable_layers in range(10, 100, 10):
         NUM_TRAINABLE_LAYERS = num_trainable_layers
         execute()
+    sys.exit(0)

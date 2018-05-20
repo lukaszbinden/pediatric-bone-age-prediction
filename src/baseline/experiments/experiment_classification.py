@@ -1,3 +1,5 @@
+import sys
+
 from data_preparation import get_gen
 from model import get_model
 from training import train
@@ -53,3 +55,5 @@ if __name__ == '__main__':
     execute()
     CLASSIFICATION = False
     execute()
+    sys.exit(0)
+
