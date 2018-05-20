@@ -3,6 +3,7 @@ from keras import backend
 from model import get_model
 from training import train
 from testing import test
+import global_hyperparams as hp
 from keras.optimizers import Adam, SGD
 from keras.preprocessing.image import ImageDataGenerator
 

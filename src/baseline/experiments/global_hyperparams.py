@@ -8,6 +8,7 @@ from keras.optimizers import Adam, SGD
 NUM_EPOCHS = 2
 IMG_SIZE = (299, 299)
 METRIC = ['mae']
+METRIC_CLASSIFICATION = ['top_k_categorical_accuracy']
 LOSS_DEFAULT = 'mae'
 LOSS_CLASSIFICATION = 'categorical_crossentropy'
 LEARNING_RATE_DEFAULT = 0.001

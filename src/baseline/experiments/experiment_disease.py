@@ -64,7 +64,7 @@ def execute():
                     OPTIMIZER, LOSS, LEARNING_RATE, hp.NUM_EPOCHS,
                     finetuning=False,
                     num_trainable_layers=NUM_TRAINABLE_LAYERS,
-                    metrics=['accuracy'])
+                    metrics=hp.METRIC_CLASSIFICATION)
 
     print('Chest dataset (final) history:', history.history)
 
