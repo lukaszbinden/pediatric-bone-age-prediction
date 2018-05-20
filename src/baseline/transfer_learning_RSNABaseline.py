@@ -143,19 +143,23 @@ train_gen_chest = flow_from_dataframe(core_idg, train_df_chest, path_col='path',
 valid_gen_chest = flow_from_dataframe(core_idg, valid_df_chest, path_col='path', y_col=class_str_col, target_size=IMG_SIZE,
                                       color_mode='rgb', batch_size=16)  # we can use much larger batches for evaluation
 
-bone_age_model.fit_generator(train_gen_chest,
-                             validation_data=valid_gen_chest,
-                             epochs=15,
-                             callbacks=callbacks_list)
+history = bone_age_model.fit_generator(train_gen_chest,
+                                       validation_data=valid_gen_chest,
+                                       epochs=5,
+                                       callbacks=callbacks_list)
+
+print('Model history after chest dataset:', history.history)
 
 print('==================================================')
 print('======= Training Model on BONEAGE Dataset ========')
 print('==================================================')
 
-bone_age_model.fit_generator(train_gen,
-                             validation_data=(test_X, test_Y),
-                             epochs=15,
-                             callbacks=callbacks_list)
+history = bone_age_model.fit_generator(train_gen,
+                                       validation_data=(test_X, test_Y),
+                                       epochs=5,
+                                       callbacks=callbacks_list)
+
+print('Model history after boneage dataset:', history.history)
 
 tend = datetime.now()
 print('elapsed time: %s' % str((tend-tstart)))
