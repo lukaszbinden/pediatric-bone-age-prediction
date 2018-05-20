@@ -1,4 +1,5 @@
 from data_preparation import get_gen
+from keras import backend
 from model import get_model
 from training import train
 from testing import test
@@ -47,6 +48,9 @@ def execute():
     print('Boneage dataset (final) history:', history.history)
 
     test(model)
+
+    backend.clear_session()
+
 
 if __name__ == '__main__':
     GENDER_ENABLED = True
