@@ -47,7 +47,10 @@ def execute():
 
     print('Boneage dataset (final) history:', history.history)
 
-    test_w_classification(model)
+    if CLASSIFICATION:
+        test_w_classification(model)
+    else:
+        test(model)
 
     backend.clear_session()
 
