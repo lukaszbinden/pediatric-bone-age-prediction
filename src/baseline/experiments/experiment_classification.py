@@ -1,7 +1,7 @@
 from data_preparation import get_gen
 from model import get_model
 from training import train
-from testing import test
+from testing import test_w_classification
 from keras.optimizers import Adam, SGD
 from keras.preprocessing.image import ImageDataGenerator
 
@@ -46,7 +46,7 @@ def execute():
 
     print('Boneage dataset (final) history:', history.history)
 
-    test(model)
+    test_w_classification(model)
 
 if __name__ == '__main__':
     CLASSIFICATION = True
