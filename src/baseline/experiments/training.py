@@ -2,6 +2,7 @@ from datetime import datetime
 
 from keras.callbacks import EarlyStopping, ReduceLROnPlateau
 from keras.optimizers import Adam
+from keras.utils import plot_model
 
 
 def train(train_gen, val_gen,
@@ -42,9 +43,12 @@ def train(train_gen, val_gen,
         for layer in model.layers[-num_trainable_layers:]:
             layer.trainable = True
 
-    model.compile(optimizer=optimizer, loss=loss, metrics=metrics)  # if two outputs are defined two losses and loss_weights could be defined
+    model.compile(optimizer=optimizer, loss=loss,
+                  metrics=metrics)  # if two outputs are defined two losses and loss_weights could be defined
 
     model.summary()  # prints the network structure
+    plot_model(model, to_file='model_plot.png', show_shapes=True,
+               show_layer_names=True)  # save visualization of model to file
 
     earlyStopping = EarlyStopping(monitor="val_loss", mode="min",
                                   patience=10)

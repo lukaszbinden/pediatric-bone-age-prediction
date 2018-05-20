@@ -1,10 +1,12 @@
 import sys
+import os
 
 from data_preparation import get_gen
 from model import get_model
 from training import train
 from testing import test
 import global_hyperparams as hp
+from visualization import plot
 
 from keras.optimizers import Adam, SGD
 from keras.preprocessing.image import ImageDataGenerator, array_to_img, img_to_array, load_img
@@ -99,6 +101,8 @@ def execute():
                     finetuning=True,
                     num_trainable_layers=NUM_TRAINABLE_LAYERS,
                     metrics=hp.METRIC)
+
+    plot(os.path.basename(__file__) + "_" + DISEASE_ENABLED, history)
 
     print('Boneage dataset (final) history:', history.history)
 

@@ -1,9 +1,12 @@
 import sys
+import os
 
 from data_preparation import get_gen
 from model import get_model
 from training import train
 from testing import test
+from visualization import plot
+
 from keras.optimizers import Adam, SGD
 from keras.preprocessing.image import ImageDataGenerator
 
@@ -47,6 +50,9 @@ def execute():
                     num_trainable_layers=NUM_TRAINABLE_LAYERS)
 
     print('Boneage dataset (final) history:', history)
+
+    plot(os.path.basename(__file__) + "_" + GENDER_ENABLED, history)
+
 
     test(model)
 
