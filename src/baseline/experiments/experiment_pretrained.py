@@ -5,9 +5,10 @@ from training import train
 from testing import test
 from keras.optimizers import Adam, SGD
 from keras.preprocessing.image import ImageDataGenerator
+import global_hyperparams as hp
 
 # Hyperparameters
-NUM_EPOCHS = 5
+NUM_EPOCHS = hp.NUM_EPOCHS
 LEARNING_RATE = 0.001
 BATCH_SIZE_TRAIN = 16
 BATCH_SIZE_VAL = 16

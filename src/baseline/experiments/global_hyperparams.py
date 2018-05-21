@@ -5,7 +5,7 @@
 # fair performance comparison.
 from keras.optimizers import Adam, SGD
 
-NUM_EPOCHS = 2
+NUM_EPOCHS = 5
 IMG_SIZE = (299, 299)
 METRIC = ['mae']
 METRIC_CLASSIFICATION = ['top_k_categorical_accuracy']
