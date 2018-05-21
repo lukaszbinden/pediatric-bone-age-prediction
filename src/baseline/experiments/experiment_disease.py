@@ -105,7 +105,7 @@ def execute():
 
     test(boneage_model)
 
-    backend.clear_session()
+    # backend.clear_session()
 
 
 
