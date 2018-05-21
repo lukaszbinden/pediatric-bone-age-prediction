@@ -55,17 +55,18 @@ def execute():
     if DISEASE_ENABLED and not AGE_ENABLED:
         OPTIMIZER = SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
         LOSS = hp.LOSS_CLASSIFICATION
-        METRIC =
+        METRIC = hp.METRIC_CLASSIFICATION
     elif AGE_ENABLED and not DISEASE_ENABLED:
         OPTIMIZER = hp.OPTIMIZER_ADAM_DEFAULT
         LOSS = hp.LOSS_DEFAULT
+        METRIC = hp.METRIC
 
     history = train(train_gen_chest, val_gen_chest, steps_per_epoch_chest,
                     validation_steps_chest, chest_model,
                     OPTIMIZER, LOSS, LEARNING_RATE, hp.NUM_EPOCHS,
                     finetuning=False,
                     num_trainable_layers=NUM_TRAINABLE_LAYERS,
-                    metrics=)
+                    metrics=METRIC)
 
     print('Chest dataset (final) history:', history.history)
 
@@ -104,7 +105,7 @@ def execute():
 
     test(boneage_model)
 
-    #backend.clear_session()
+    backend.clear_session()
 
 
 
