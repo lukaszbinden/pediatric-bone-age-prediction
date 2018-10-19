@@ -6,9 +6,9 @@ import numpy as np
 
 from sklearn.model_selection import train_test_split
 
-base_dir = '/var/tmp/studi5/boneage/'
+base_dir = '/data/cvg/lukas/'
 base_datasets_dir = base_dir + 'datasets/'
-chest_dataset_dir = base_datasets_dir + 'nih-chest-xrays-full/'
+chest_dataset_dir = base_datasets_dir + 'chest/'
 boneage_dataset_dir = base_datasets_dir + 'boneage/'
 
 class_str_col_boneage = 'boneage'
