@@ -14,7 +14,6 @@ BATCH_SIZE_TRAIN = 16
 BATCH_SIZE_VAL = 16
 LOSS = 'mae'
 OPTIMIZER = Adam()
-NUM_TRAINABLE_LAYERS = 100
 IMG_SIZE = (299, 299)
 
 
@@ -66,6 +65,7 @@ def execute():
 
 
 if __name__ == '__main__':
+    NUM_TRAINABLE_LAYERS = 100
     CHEST = True
     execute()
     CHEST = False
