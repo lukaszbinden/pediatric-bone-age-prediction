@@ -14,7 +14,7 @@ BATCH_SIZE_TRAIN = 16
 BATCH_SIZE_VAL = 16
 LOSS = 'mae'
 OPTIMIZER = Adam()
-NUM_TRAINABLE_LAYERS = 10
+NUM_TRAINABLE_LAYERS = 100
 IMG_SIZE = (299, 299)
 
 
@@ -43,15 +43,15 @@ def execute():
     model = get_model(model='winner', gender_input_enabled=True, age_output_enabled=True, disease_enabled=False,
                       pretrained='imagenet')
 
-    OPTIMIZER = Adam(lr=1e-3)
+    OPTIMIZER = Adam(lr=0.001, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0)
 
     if CHEST:
+        NUM_TRAINABLE_LAYERS = 30
         history = train(train_gen_chest, val_gen_chest, steps_per_epoch_chest,
                         validation_steps_chest, model,
                         OPTIMIZER, LOSS, LEARNING_RATE, NUM_EPOCHS,
                         finetuning=False,
                         num_trainable_layers=NUM_TRAINABLE_LAYERS)
-
         OPTIMIZER = SGD(lr=1e-4)
 
     history = train(train_gen_boneage, val_gen_boneage, steps_per_epoch_boneage, validation_steps_boneage, model,

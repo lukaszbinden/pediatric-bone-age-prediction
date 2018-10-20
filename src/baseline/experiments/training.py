@@ -41,6 +41,8 @@ def train(train_gen, val_gen,
             layer.trainable = False
         for layer in model.layers[-num_trainable_layers:]:
             layer.trainable = True
+    else:
+        model.trainable = True
 
     model.compile(optimizer=optimizer, loss=loss, metrics=metrics)  # if two outputs are defined two losses and loss_weights could be defined
 
@@ -48,9 +50,9 @@ def train(train_gen, val_gen,
 
     # earlyStopping = EarlyStopping(monitor="val_loss", mode="min", patience=10)
 
-    reduceLROnPlateau = ReduceLROnPlateau(monitor='val_loss', factor=0.8, patience=8, verbose=1, mode='auto',
+    reduceLROnPlateau = ReduceLROnPlateau(monitor='val_loss', factor=0.8, patience=10, verbose=1, mode='auto',
                                           epsilon=0.0001,
-                                          cooldown=5, min_lr=lr * 0.01)
+                                          cooldown=5, min_lr=lr * 0.1)
 
     history = model.fit_generator(train_gen, validation_data=val_gen, epochs=num_epochs, verbose=1,
                                   steps_per_epoch=steps_per_epoch,
