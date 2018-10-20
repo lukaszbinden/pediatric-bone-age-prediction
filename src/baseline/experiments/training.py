@@ -46,17 +46,16 @@ def train(train_gen, val_gen,
 
     model.summary()  # prints the network structure
 
-    earlyStopping = EarlyStopping(monitor="val_loss", mode="min",
-                                  patience=10)
+    # earlyStopping = EarlyStopping(monitor="val_loss", mode="min", patience=10)
 
-    reduceLROnPlateau = ReduceLROnPlateau(monitor='val_loss', factor=0.8, patience=10, verbose=1, mode='auto',
+    reduceLROnPlateau = ReduceLROnPlateau(monitor='val_loss', factor=0.8, patience=8, verbose=1, mode='auto',
                                           epsilon=0.0001,
-                                          cooldown=5, min_lr=lr * 0.1)
+                                          cooldown=5, min_lr=lr * 0.01)
 
     history = model.fit_generator(train_gen, validation_data=val_gen, epochs=num_epochs, verbose=1,
                                   steps_per_epoch=steps_per_epoch,
                                   validation_steps=validation_steps,
-                                  callbacks=[earlyStopping, reduceLROnPlateau])  # trains the model
+                                  callbacks=[reduceLROnPlateau])  # trains the model
 
     tend = datetime.now()
     print('training finished: %s' % str((tend - tstart)))
