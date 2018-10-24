@@ -42,7 +42,8 @@ def execute():
     model = get_model(model='winner', gender_input_enabled=True, age_output_enabled=True, disease_enabled=False,
                       pretrained='imagenet')
 
-    OPTIMIZER = Adam(lr=0.001, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0)
+    LEARNING_RATE = 1e-3
+    OPTIMIZER = Adam(lr=LEARNING_RATE, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0)
 
     if CHEST:
         NUM_TRAINABLE_LAYERS = 30
@@ -51,7 +52,8 @@ def execute():
                         OPTIMIZER, LOSS, LEARNING_RATE, NUM_EPOCHS,
                         finetuning=False,
                         num_trainable_layers=NUM_TRAINABLE_LAYERS)
-        OPTIMIZER = SGD(lr=1e-4)
+        LEARNING_RATE = 1e-4
+        OPTIMIZER = SGD(lr=LEARNING_RATE)
 
     history = train(train_gen_boneage, val_gen_boneage, steps_per_epoch_boneage, validation_steps_boneage, model,
                     OPTIMIZER, LOSS, LEARNING_RATE, NUM_EPOCHS, finetuning=True,
