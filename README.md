@@ -25,18 +25,12 @@ The training/validation split is 80/20. The idea to restrict the chest X-rays pa
 
 ## Experiments
 * Try transfer learning with other medical datasets (MURA stanford, etc. )
-* Try Preprocessing of images (noise, rotation, etc. ) -> possible with keras 
-* Try different architectures of the used net
-* Make model highlight joints 
-* Incorporate gender into model
+* Try different architectures of the used net, e.g. use DenseNet instead of InceptionV3
 * Build model on top of model to predict accuracy of age model
 * Try combining different architectures/approaches with meta learning (e.g. voting)
 * Chest XRays validate against disease and patient age respectively
-* Chest XRays take all samples vs. only age in boneage range
 * Experiment with different number of freezed layers
-* Experiment difference if pretrained on imagenet or not
-* Does including gender as input improve the result?
-* Experiment with different hyperparameters
+* Do more extensive hyperparameter tuning
 * Regression vs. Classification on months range between 0 and 12 * 100
 * Pretrain Kevin's baseline with NIH chest dataset (transfer learning)
 
