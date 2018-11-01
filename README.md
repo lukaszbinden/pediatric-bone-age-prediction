@@ -4,7 +4,7 @@ Based on kaggle RSNA Bone Age Prediction from X-Rays
 https://www.kaggle.com/kmader/rsna-bone-age
 
 ## Results of transfer learning experiments
-Pretrain the model on the much larger chest NIH dataset (~118k images) and finetune on the small bone age dataset (~ 14k). The model is based on the RSNA challenge winner model by 16Bit. The training size of the hand X-Rays dataset is 12'611 images for all experiments.
+Pretrain the model on the much larger chest NIH dataset (112k images) and finetune on the small bone age dataset (14k). The model is based on the RSNA challenge winner model by 16Bit. The training size of the hand X-Rays dataset is 12'611 images for all experiments.
 
 | Experiment  | Chest training size | Epochs | MAE |  Date |
 | ------------- | ------------- | ------------- | ------------- |  ------------- |
