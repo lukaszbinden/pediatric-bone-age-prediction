@@ -10,8 +10,8 @@ Pretrain the model on the much larger chest NIH dataset (112k images) and finetu
 | Experiment  | Chest training size | Epochs | MAE |  Date |
 | ------------- | ------------- | ------------- | ------------- |  ------------- |
 | Imagenet								| n/a	| 50	| 76.8	| 181020  |
-| Imagenet								| n/a	| 250	| 8.8	| 181029  |
-| No TL, random init.					| n/a	| 250	| 10.8	| 181030  |
+| Imagenet								| n/a	| 250	| **8.8**	| 181029  |
+| No TL, random init.					| n/a	| 250	| **10.8**	| 181030  |
 | Chest 0-20yrs., 30 layers finetuning	| 1560	| 50	| 33.9	| 181022  |
 | Chest 0-20yrs., 100 layers finetuning	| 1560	| 50	| 37	| 181022  |
 | Chest 0-20yrs., 100 layers finetuning	| 1560	| 250	| 41.8	| 181024  |
