@@ -1,8 +1,8 @@
 # Pediatric Bone Age Prediction
 Based on kaggle RSNA Bone Age Prediction from X-Rays
 
-http://rsnachallenges.cloudapp.net/competitions/4
-https://www.kaggle.com/kmader/rsna-bone-age
+* http://rsnachallenges.cloudapp.net/competitions/4
+* https://www.kaggle.com/kmader/rsna-bone-age
 
 ## Results of transfer learning experiments
 Pretrain the model on the much larger chest NIH dataset (112k images) and finetune on the small bone age dataset (14k). The model is based on the RSNA challenge winner model by 16Bit.
