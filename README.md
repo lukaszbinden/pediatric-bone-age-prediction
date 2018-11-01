@@ -9,6 +9,8 @@ Pretrain the model on the much larger chest NIH dataset (112k images) and finetu
 
 | Experiment  | Chest training size | Epochs | MAE |  Date |
 | ------------- | ------------- | ------------- | ------------- |  ------------- |
+| 16Bit								| n/a	| 500	| 4.265	| 2017  |
+| Radiologist								| n/a	| n/a	| 7.32	| 2017  |
 | Imagenet								| n/a	| 50	| 76.8	| 181020  |
 | Imagenet								| n/a	| 250	| **8.8**	| 181029  |
 | No TL, random init.					| n/a	| 250	| **10.8**	| 181030  |
