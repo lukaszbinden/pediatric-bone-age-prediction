@@ -21,7 +21,7 @@ The training size of the hand X-Rays dataset is 12'611 images for all experiment
 | Chest 0-100yrs, all layers finetuning	| 89696	| 250	| pending	| pending |
 
 ## Experiments
-* Try transfer learning with other medical datasets (mura stanford, chestxray nih, etc. )
+* Try transfer learning with other medical datasets (MURA stanford, etc. )
 * Try Preprocessing of images (noise, rotation, etc. ) -> possible with keras 
 * Try different architectures of the used net
 * Make model highlight joints 
@@ -38,9 +38,9 @@ The training size of the hand X-Rays dataset is 12'611 images for all experiment
 * Pretrain Kevin's baseline with NIH chest dataset (transfer learning)
 
 ## Links
-* MURA dataset: https://stanfordmlgroup.github.io/projects/mura/ -> asked for early access but did not get any response
+* MURA dataset: https://stanfordmlgroup.github.io/projects/mura/
 * Chest Xrays dataset on box (full set): https://nihcc.app.box.com/v/ChestXray-NIHCC
 * Chest Xrays dataset on kaggle (5% sample): https://www.kaggle.com/nih-chest-xrays/data
+* Bone Age dataset: https://stanfordmedicine.app.box.com/s/4r1zwio6z6lrzk7zw3fro7ql5mnoupcv/folder/42459416739
 * RSNA Bone Age on kaggle: https://www.kaggle.com/kmader/rsna-bone-age  
-   Installed 180426 on studi5@node03 in /var/tmp/studi5/boneage/
 * Different architectures to try out: https://keras.io/applications/
