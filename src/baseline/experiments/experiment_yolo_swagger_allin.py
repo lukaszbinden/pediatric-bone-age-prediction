@@ -43,6 +43,7 @@ def execute():
                       pretrained='imagenet')
 
     OPTIMIZER = Adam(lr=0.001, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0)
+    NUM_TRAINABLE_LAYERS = 100
 
     if CHEST:
         NUM_TRAINABLE_LAYERS = 30
@@ -65,7 +66,6 @@ def execute():
 
 
 if __name__ == '__main__':
-    NUM_TRAINABLE_LAYERS = 100
     CHEST = True
     execute()
     CHEST = False
