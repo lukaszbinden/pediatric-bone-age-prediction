@@ -21,9 +21,10 @@ Pretrain the model on the much larger chest NIH dataset (112k images) and finetu
 | Chest 0-20yrs., 20 layers finetuning	| 1560	| 250	| 36.7	| 181026  |
 | Chest 0-20yrs., 30 layers finetuning	| 1560	| 250	| 35.8	| 181027  |
 | Chest 0-100yrs, 3 layers finetuning	| 89696	| 250	| 34.8	| 181103 |
-| Chest 0-100yrs, all layers finetuning	| 89696	| 250	| pending	| pending |
+| Chest 0-100yrs, all layers finetuning	| 89696	| 250	| pending*	| pending* |
 
 The training/validation split is 80/20. The idea to restrict the chest X-rays patient's age to the same range as the hand X-rays patients turned out unsuccessful as the dataset size decreased significantly to 1560 images and transfer learning results were disappointing.
+* After 14 days of training, this experiment crashed on 12/11/18 due to a "bus error" on the cluster. Due to lack of checkpoints, need to restart it from scratch. 
 
 ## Experiments
 * Try transfer learning with other medical datasets (MURA stanford, etc. )
